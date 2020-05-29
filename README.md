@@ -6,7 +6,7 @@ Backend infra to support all kinds of mappings in Fyle Accounting Integrations
 
     $ pip install fyle-accounting-mappings
 
-In Django `[settings.py](http://settings.py)` -
+In Django `settings.py` -
 
     INSTALLED_APPS = [
         'django.contrib.admin',
