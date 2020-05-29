@@ -19,8 +19,8 @@ In Django `[settings.py](http://settings.py)` -
         # Installed Apps
         'rest_framework',
         'corsheaders',
-    		'fyle_rest_auth', # already existing reusable django app for authentication
-    		'fyle_mapping_infra', # new mapping infra app
+        'fyle_rest_auth', # already existing reusable django app for authentication
+        'fyle_mapping_infra', # new mapping infra app
     
         # User Created Apps
         'apps.users',
