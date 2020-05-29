@@ -11,7 +11,7 @@ setuptools.setup(
     version='0.1.0',
     author='Shwetabh Kumar',
     author_email='shwetabh.kumar@fyle.in',
-    description='Django application to store the accounting mappings in a generic manner',
+    description='Django application to store the fyle accounting mappings in a generic manner',
     license='MIT',
     long_description=long_description,
     long_description_content_type='text/markdown',
