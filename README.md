@@ -20,7 +20,7 @@ In Django `settings.py` -
         'rest_framework',
         'corsheaders',
         'fyle_rest_auth', # already existing reusable django app for authentication
-        'fyle_mapping_infra', # new mapping infra app
+        'fyle_accounting_mappings', # new mapping infra app
     
         # User Created Apps
         'apps.users',
@@ -37,6 +37,6 @@ Run migrations -
 
 To use - 
 
-    from fyle_mappings_infra.models import MappingSetting, Mapping, ExpenseTag, DestinationTag
+    from fyle_accounting_mappings.models import MappingSetting, Mapping, ExpenseTag, DestinationTag
     
     # Operations with DB
