@@ -64,6 +64,7 @@ class ExpenseAttribute(models.Model):
                     value=attribute['value'],
                     workspace_id=workspace_id,
                     defaults={
+                        'active': attribute['active'] if 'active' in attribute else None,
                         'source_id': attribute['source_id'],
                         'display_name': attribute['display_name'],
                     }
@@ -99,6 +100,7 @@ class DestinationAttribute(models.Model):
                     value=attribute['value'],
                     workspace_id=workspace_id,
                     defaults={
+                        'active': attribute['active'] if 'active' in attribute else None,
                         'display_name': attribute['display_name'],
                         'destination_id': attribute['destination_id']
                     }
