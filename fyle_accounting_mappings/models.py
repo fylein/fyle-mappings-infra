@@ -50,6 +50,9 @@ class ExpenseAttribute(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
     updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
 
+    class Meta:
+        db_table = 'expense_attributes'
+
     @staticmethod
     def bulk_upsert_expense_attributes(attributes: List[Dict], workspace_id):
         """
@@ -87,6 +90,9 @@ class DestinationAttribute(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
     updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
 
+    class Meta:
+        db_table = 'destination_attributes'
+
     @staticmethod
     def bulk_upsert_destination_attributes(attributes: List[Dict], workspace_id):
         """
@@ -119,6 +125,9 @@ class MappingSetting(models.Model):
     workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
     created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
     updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
+
+    class Meta:
+        db_table = 'mapping_settings'
 
     @staticmethod
     def bulk_upsert_mapping_setting(settings: List[Dict], workspace_id: int):
@@ -155,6 +164,7 @@ class Mapping(models.Model):
 
     class Meta:
         unique_together = ('source_type', 'source', 'destination_type', 'workspace')
+        db_table = 'mappings'
 
     @staticmethod
     def create_or_update_mapping(source_type: str, destination_type: str,

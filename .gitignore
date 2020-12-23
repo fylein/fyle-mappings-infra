@@ -8,6 +8,7 @@ __pycache__/
 
 # IDEs
 .idea/
+.vscode
 
 # Distribution / packaging
 .Python
