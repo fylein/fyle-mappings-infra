@@ -6,39 +6,39 @@ from .models import ExpenseAttribute, DestinationAttribute, MappingSetting, Mapp
 
 
 class ExpenseAttributeSerializer(serializers.ModelSerializer):
-    """
-    Expense Attribute serializer
-    """
-    class Meta:
-        model = ExpenseAttribute
-        fields = '__all__'
+	"""
+	Expense Attribute serializer
+	"""
+	class Meta:
+		model = ExpenseAttribute
+		fields = '__all__'
 
 
 class DestinationAttributeSerializer(serializers.ModelSerializer):
-    """
-    Destination Attribute serializer
-    """
-    class Meta:
-        model = DestinationAttribute
-        fields = '__all__'
+	"""
+	Destination Attribute serializer
+	"""
+	class Meta:
+		model = DestinationAttribute
+		fields = '__all__'
 
 
 class MappingSettingSerializer(serializers.ModelSerializer):
-    """
-    Mapping Setting serializer
-    """
-    class Meta:
-        model = MappingSetting
-        fields = '__all__'
+	"""
+	Mapping Setting serializer
+	"""
+	class Meta:
+		model = MappingSetting
+		fields = '__all__'
 
 
 class MappingSerializer(serializers.ModelSerializer):
-    """
-    Mapping serializer
-    """
-    source = ExpenseAttributeSerializer()
-    destination = DestinationAttributeSerializer()
+	"""
+	Mapping serializer
+	"""
+	source = ExpenseAttributeSerializer()
+	destination = DestinationAttributeSerializer()
 
-    class Meta:
-        model = Mapping
-        fields = '__all__'
+	class Meta:
+		model = Mapping
+		fields = '__all__'
