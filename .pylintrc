@@ -151,7 +151,10 @@ disable=print-statement,
         no-member,
         simplifiable-if-expression,
         broad-except,
-        too-many-arguments
+        too-many-arguments,
+        too-many-locals,
+        too-few-public-methods,
+        super-with-arguments
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -230,7 +233,7 @@ spelling-store-unknown-words=no
 
 [MISCELLANEOUS]
 
-# List of note attributes to take in consideration, separated by a comma.
+# List of note tags to take in consideration, separated by a comma.
 notes=FIXME,
       XXX,
       TODO
@@ -331,7 +334,7 @@ indent-after-paren=4
 
 # String used as indentation unit. This is usually "    " (4 spaces) or "\t" (1
 # tab).
-indent-string=\t
+indent-string='    '
 
 # Maximum number of characters on a single line.
 max-line-length=120
@@ -557,7 +560,7 @@ max-bool-expr=5
 max-branches=12
 
 # Maximum number of locals for function / method body.
-max-locals=15
+max-locals=20
 
 # Maximum number of parents for a class (see R0901).
 max-parents=7
