@@ -2,6 +2,7 @@ import importlib
 from typing import List, Dict
 
 from django.db import models, transaction
+from django.contrib.postgres.fields import JSONField
 
 from .exceptions import BulkError
 from .utils import assert_valid
@@ -47,6 +48,7 @@ class ExpenseAttribute(models.Model):
     source_id = models.CharField(max_length=255, help_text='Fyle ID')
     workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
     active = models.BooleanField(null=True, help_text='Indicates whether the fields is active or not')
+    detail = JSONField(help_text='Detailed expense attributes payload', null=True)
     created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
     updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
 
@@ -70,6 +72,7 @@ class ExpenseAttribute(models.Model):
                         'active': attribute['active'] if 'active' in attribute else None,
                         'source_id': attribute['source_id'],
                         'display_name': attribute['display_name'],
+                        'detail': attribute['detail'] if 'detail' in attribute else None
                     }
                 )
                 expense_attributes.append(expense_attribute)
@@ -87,6 +90,7 @@ class DestinationAttribute(models.Model):
     destination_id = models.CharField(max_length=255, help_text='Destination ID')
     workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
     active = models.BooleanField(null=True, help_text='Indicates whether the fields is active or not')
+    detail = JSONField(help_text='Detailed destination attributes payload', null=True)
     created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
     updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
 
@@ -108,7 +112,8 @@ class DestinationAttribute(models.Model):
                     defaults={
                         'active': attribute['active'] if 'active' in attribute else None,
                         'display_name': attribute['display_name'],
-                        'destination_id': attribute['destination_id']
+                        'destination_id': attribute['destination_id'],
+                        'detail': attribute['detail'] if 'detail' in attribute else None
                     }
                 )
                 destination_attributes.append(destination_attribute)
