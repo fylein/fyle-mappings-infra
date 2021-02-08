@@ -107,12 +107,12 @@ class DestinationAttribute(models.Model):
             for attribute in attributes:
                 destination_attribute, _ = DestinationAttribute.objects.update_or_create(
                     attribute_type=attribute['attribute_type'],
-                    value=attribute['value'],
+                    destination_id=attribute['destination_id'],
                     workspace_id=workspace_id,
                     defaults={
                         'active': attribute['active'] if 'active' in attribute else None,
                         'display_name': attribute['display_name'],
-                        'destination_id': attribute['destination_id'],
+                        'value': attribute['value'],
                         'detail': attribute['detail'] if 'detail' in attribute else None
                     }
                 )
