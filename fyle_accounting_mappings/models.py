@@ -173,7 +173,7 @@ class Mapping(models.Model):
 
     @staticmethod
     def create_or_update_mapping(source_type: str, destination_type: str,
-                                 source_value: str, destination_value: str, workspace_id: int):
+                                 source_value: str, destination_value: str, destination_id: str, workspace_id: int):
         """
         Bulk update or create mappings
         source_type = 'Type of Source attribute, eg. CATEGORY',
@@ -201,6 +201,7 @@ class Mapping(models.Model):
                 'destination': DestinationAttribute.objects.get(
                     attribute_type=destination_type,
                     value=destination_value,
+                    destination_id=destination_id,
                     workspace_id=workspace_id
                 )
             }
