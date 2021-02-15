@@ -47,6 +47,7 @@ class ExpenseAttribute(models.Model):
     value = models.CharField(max_length=255, help_text='Value of expense attribute')
     source_id = models.CharField(max_length=255, help_text='Fyle ID')
     workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
+    auto_mapped = models.BooleanField(default=False, help_text='Indicates whether the field is auto mapped or not')
     active = models.BooleanField(null=True, help_text='Indicates whether the fields is active or not')
     detail = JSONField(help_text='Detailed expense attributes payload', null=True)
     created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
