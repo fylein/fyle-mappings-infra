@@ -193,9 +193,9 @@ class Mapping(models.Model):
 
         mapping, _ = Mapping.objects.update_or_create(
             source_type=source_type,
-            source=ExpenseAttribute.objects.get(
-                attribute_type=source_type, value=source_value, workspace_id=workspace_id
-            ) if source_value else None,
+            source=ExpenseAttribute.objects.filter(
+                attribute_type=source_type, value__iexact=source_value, workspace_id=workspace_id
+            ).first() if source_value else None,
             destination_type=destination_type,
             workspace=Workspace.objects.get(pk=workspace_id),
             defaults={
