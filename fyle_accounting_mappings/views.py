@@ -4,6 +4,7 @@ from typing import Dict, List
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.response import Response
 from rest_framework.views import status
+from django.db.models import Count
 
 from .exceptions import BulkError
 from .utils import assert_valid
@@ -53,7 +54,12 @@ class MappingsView(ListCreateAPIView):
 
         assert_valid(source_type is not None, 'query param source type not found')
 
-        return Mapping.objects.filter(source_type=source_type, workspace_id=self.kwargs['workspace_id'])
+        if self.request.query_params.get('is3D') == 'true':
+            mappings = Mapping.objects.filter(source_id__in=Mapping.objects.filter(source_type=source_type, workspace_id=self.kwargs['workspace_id']).values('source_id').annotate(cnt=Count('source_id')).filter(cnt__gt=1).values_list('source_id'))
+        else:
+            mappings = Mapping.objects.filter(source_type=source_type, workspace_id=self.kwargs['workspace_id'])
+
+        return mappings
 
     def post(self, request, *args, **kwargs):
         """
