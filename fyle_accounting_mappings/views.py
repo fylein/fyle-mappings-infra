@@ -55,7 +55,9 @@ class MappingsView(ListCreateAPIView):
         assert_valid(source_type is not None, 'query param source type not found')
 
         if self.request.query_params.get('is3D') == 'true':
-            mappings = Mapping.objects.filter(source_id__in=Mapping.objects.filter(source_type=source_type, workspace_id=self.kwargs['workspace_id']).values('source_id').annotate(cnt=Count('source_id')).filter(cnt__gt=1).values_list('source_id'))
+            mappings = Mapping.objects.filter(source_id__in=Mapping.objects.filter(
+                source_type=source_type, workspace_id=self.kwargs['workspace_id']).values('source_id').annotate(
+                    cnt=Count('source_id')).filter(cnt__gt=1).values_list('source_id'))
         else:
             mappings = Mapping.objects.filter(source_type=source_type, workspace_id=self.kwargs['workspace_id'])
 
