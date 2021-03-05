@@ -59,7 +59,7 @@ class MappingsView(ListCreateAPIView):
         else:
             mappings = Mapping.objects.filter(source_type=source_type, workspace_id=self.kwargs['workspace_id'])
 
-        return mappings
+        return mappings.order_by('source__value')
 
     def post(self, request, *args, **kwargs):
         """
