@@ -54,7 +54,7 @@ class MappingsView(ListCreateAPIView):
 
         assert_valid(source_type is not None, 'query param source type not found')
 
-        if self.request.query_params.get('table_dimension') == 3:
+        if int(self.request.query_params.get('table_dimension')) == 3:
             mappings = Mapping.objects.filter(source_id__in=Mapping.objects.filter(
                 source_type=source_type, workspace_id=self.kwargs['workspace_id']).values('source_id').annotate(
                     count=Count('source_id')).filter(count=2).values_list('source_id'))
