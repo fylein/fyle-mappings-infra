@@ -57,6 +57,7 @@ class ExpenseAttribute(models.Model):
 
     class Meta:
         db_table = 'expense_attributes'
+        unique_together = ('value', 'attribute_type', 'workspace')
 
     @staticmethod
     def bulk_upsert_expense_attributes(attributes: List[Dict], workspace_id):
@@ -101,6 +102,7 @@ class DestinationAttribute(models.Model):
 
     class Meta:
         db_table = 'destination_attributes'
+        unique_together = ('destination_id', 'attribute_type', 'workspace')
 
     @staticmethod
     def bulk_upsert_destination_attributes(attributes: List[Dict], workspace_id):
