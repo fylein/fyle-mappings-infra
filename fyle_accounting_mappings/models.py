@@ -60,27 +60,84 @@ class ExpenseAttribute(models.Model):
         unique_together = ('value', 'attribute_type', 'workspace')
 
     @staticmethod
-    def bulk_upsert_expense_attributes(attributes: List[Dict], workspace_id):
+    def create_or_update_expense_attribute(attribute: Dict, workspace_id):
         """
-        Get or create expense attributes
+        Get or create expense attribute
         """
-        expense_attributes = []
+        expense_attribute, _ = ExpenseAttribute.objects.update_or_create(
+            attribute_type=attribute['attribute_type'],
+            value=attribute['value'],
+            workspace_id=workspace_id,
+            defaults={
+                'active': attribute['active'] if 'active' in attribute else None,
+                'source_id': attribute['source_id'],
+                'display_name': attribute['display_name'],
+                'detail': attribute['detail'] if 'detail' in attribute else None
+            }
+        )
+        return expense_attribute
 
-        with transaction.atomic():
-            for attribute in attributes:
-                expense_attribute, _ = ExpenseAttribute.objects.update_or_create(
-                    attribute_type=attribute['attribute_type'],
-                    value=attribute['value'],
-                    workspace_id=workspace_id,
-                    defaults={
-                        'active': attribute['active'] if 'active' in attribute else None,
-                        'source_id': attribute['source_id'],
-                        'display_name': attribute['display_name'],
-                        'detail': attribute['detail'] if 'detail' in attribute else None
-                    }
+    @staticmethod
+    def bulk_create_or_update_expense_attributes(
+            attributes: List[Dict], attribute_type: str, workspace_id: int, update: bool = False):
+        """
+        Create Expense Attributes in bulk
+        :param update: Update Pre-existing records or not
+        :param attribute_type: Attribute type
+        :param attributes: attributes = [{
+            'attribute_type': Type of attribute,
+            'display_name': Display_name of attribute_field,
+            'value': Value of attribute,
+            'destination_id': Destination Id of the attribute,
+            'detail': Extra Details of the attribute
+        }]
+        :param workspace_id: Workspace Id
+        :return: created / updated attributes
+        """
+        attribute_value_list = [attribute['value'] for attribute in attributes]
+
+        existing_attributes = ExpenseAttribute.objects.filter(
+            value__in=attribute_value_list, attribute_type=attribute_type,
+            workspace_id=workspace_id).all()
+
+        existing_attribute_values = []
+
+        primary_key_map = {}
+
+        for existing_attribute in existing_attributes:
+            existing_attribute_values.append(existing_attribute.value)
+            primary_key_map[existing_attribute.value] = existing_attribute.id
+
+        attributes_to_be_created = []
+        attributes_to_be_updated = []
+
+        values_appended = []
+        for attribute in attributes:
+            if attribute['value'] not in existing_attribute_values and attribute['value'] not in values_appended:
+                values_appended.append(attribute['value'])
+                attributes_to_be_created.append(
+                    ExpenseAttribute(
+                        attribute_type=attribute_type,
+                        display_name=attribute['display_name'],
+                        value=attribute['value'],
+                        source_id=attribute['source_id'],
+                        detail=attribute['detail'] if 'detail' in attribute else None,
+                        workspace_id=workspace_id
+                    )
                 )
-                expense_attributes.append(expense_attribute)
-            return expense_attributes
+            else:
+                if update:
+                    attributes_to_be_updated.append(
+                        ExpenseAttribute(
+                            id=primary_key_map[attribute['value']],
+                            detail=attribute['detail'] if 'detail' in attribute else None,
+                        )
+                    )
+        if attributes_to_be_created:
+            ExpenseAttribute.objects.bulk_create(attributes_to_be_created, batch_size=50)
+
+        if attributes_to_be_updated:
+            ExpenseAttribute.objects.bulk_update(attributes_to_be_updated, fields=['detail'], batch_size=50)
 
 
 class DestinationAttribute(models.Model):
@@ -105,26 +162,87 @@ class DestinationAttribute(models.Model):
         unique_together = ('destination_id', 'attribute_type', 'workspace')
 
     @staticmethod
-    def bulk_upsert_destination_attributes(attributes: List[Dict], workspace_id):
+    def create_or_update_destination_attribute(attribute: Dict, workspace_id):
         """
         get or create destination attributes
         """
-        destination_attributes = []
-        with transaction.atomic():
-            for attribute in attributes:
-                destination_attribute, _ = DestinationAttribute.objects.update_or_create(
-                    attribute_type=attribute['attribute_type'],
-                    destination_id=attribute['destination_id'],
-                    workspace_id=workspace_id,
-                    defaults={
-                        'active': attribute['active'] if 'active' in attribute else None,
-                        'display_name': attribute['display_name'],
-                        'value': attribute['value'],
-                        'detail': attribute['detail'] if 'detail' in attribute else None
-                    }
+        destination_attribute, _ = DestinationAttribute.objects.update_or_create(
+            attribute_type=attribute['attribute_type'],
+            destination_id=attribute['destination_id'],
+            workspace_id=workspace_id,
+            defaults={
+                'active': attribute['active'] if 'active' in attribute else None,
+                'display_name': attribute['display_name'],
+                'value': attribute['value'],
+                'detail': attribute['detail'] if 'detail' in attribute else None
+            }
+        )
+        return destination_attribute
+
+    @staticmethod
+    def bulk_create_or_update_destination_attributes(
+            attributes: List[Dict], attribute_type: str, workspace_id: int, update: bool = False):
+        """
+        Create Expense Attributes in bulk
+        :param update: Update Pre-existing records or not
+        :param attribute_type: Attribute type
+        :param attributes: attributes = [{
+            'attribute_type': Type of attribute,
+            'display_name': Display_name of attribute_field,
+            'value': Value of attribute,
+            'destination_id': Fyle Id of the attribute,
+            'detail': Extra Details of the attribute
+        }]
+        :param workspace_id: Workspace Id
+        :return: created / updated attributes
+        """
+        attribute_destination_id_list = [attribute['destination_id'] for attribute in attributes]
+
+        existing_attributes = DestinationAttribute.objects.filter(
+            destination_id__in=attribute_destination_id_list, attribute_type=attribute_type,
+            workspace_id=workspace_id).all()
+
+        existing_attribute_destination_ids = []
+
+        primary_key_map = {}
+
+        for existing_attribute in existing_attributes:
+            existing_attribute_destination_ids.append(existing_attribute.destination_id)
+            primary_key_map[existing_attribute.destination_id] = existing_attribute.id
+
+        attributes_to_be_created = []
+        attributes_to_be_updated = []
+
+        destination_ids_appended = []
+        for attribute in attributes:
+            if attribute['destination_id'] not in existing_attribute_destination_ids \
+                    and attribute['destination_id'] not in destination_ids_appended:
+                destination_ids_appended.append(attribute['destination_id'])
+                attributes_to_be_created.append(
+                    DestinationAttribute(
+                        attribute_type=attribute_type,
+                        display_name=attribute['display_name'],
+                        value=attribute['value'],
+                        destination_id=attribute['destination_id'],
+                        detail=attribute['detail'] if 'detail' in attribute else None,
+                        workspace_id=workspace_id
+                    )
                 )
-                destination_attributes.append(destination_attribute)
-            return destination_attributes
+            else:
+                if update:
+                    attributes_to_be_updated.append(
+                        DestinationAttribute(
+                            id=primary_key_map[attribute['destination_id']],
+                            value=attribute['value'],
+                            detail=attribute['detail'] if 'detail' in attribute else None,
+                        )
+                    )
+        if attributes_to_be_created:
+            DestinationAttribute.objects.bulk_create(attributes_to_be_created, batch_size=50)
+
+        if attributes_to_be_updated:
+            DestinationAttribute.objects.bulk_update(
+                attributes_to_be_updated, fields=['detail', 'value'], batch_size=50)
 
 
 class MappingSetting(models.Model):
@@ -214,3 +332,44 @@ class Mapping(models.Model):
             }
         )
         return mapping
+
+    @staticmethod
+    def bulk_create_mappings(destination_attributes: List[DestinationAttribute], source_type: str,
+                             destination_type: str, workspace_id: int):
+        """
+        Bulk create mappings
+        :param destination_type: Destination Type
+        :param source_type: Source Type
+        :param destination_attributes: Destination Attributes List
+        :param workspace_id: workspace_id
+        :return: mappings list
+        """
+        attribute_value_list = []
+
+        for destination_attribute in destination_attributes:
+            attribute_value_list.append(destination_attribute.value)
+
+        source_attributes: List[ExpenseAttribute] = ExpenseAttribute.objects.filter(
+            value__in=attribute_value_list, workspace_id=workspace_id, mapping__source_id__isnull=True).all()
+
+        source_value_id_map = {}
+
+        for source_attribute in source_attributes:
+            source_value_id_map[source_attribute.value.lower()] = source_attribute.id
+
+        mapping_batch = []
+
+        for destination_attribute in destination_attributes:
+            if destination_attribute.value.lower() in source_value_id_map:
+                mapping_batch.append(
+                    Mapping(
+                        source_type=source_type,
+                        destination_type=destination_type,
+                        source_id=source_value_id_map[destination_attribute.value.lower()],
+                        destination_id=destination_attribute.id,
+                        workspace_id=workspace_id
+                    )
+                )
+
+        mappings = Mapping.objects.bulk_create(mapping_batch, batch_size=50)
+        return mappings
