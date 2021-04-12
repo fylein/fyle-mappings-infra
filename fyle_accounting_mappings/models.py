@@ -335,9 +335,10 @@ class Mapping(models.Model):
 
     @staticmethod
     def bulk_create_mappings(destination_attributes: List[DestinationAttribute], source_type: str,
-                             destination_type: str, workspace_id: int):
+                             destination_type: str, workspace_id: int, set_auto_mapped_flag: bool = True):
         """
         Bulk create mappings
+        :param set_auto_mapped_flag: set auto mapped to expense attributes
         :param destination_type: Destination Type
         :param source_type: Source Type
         :param destination_attributes: Destination Attributes List
@@ -372,4 +373,20 @@ class Mapping(models.Model):
                 )
 
         mappings = Mapping.objects.bulk_create(mapping_batch, batch_size=50)
+
+        if set_auto_mapped_flag:
+            expense_attributes_to_be_updated = []
+
+            for mapping in mappings:
+                expense_attributes_to_be_updated.append(
+                    ExpenseAttribute(
+                        id=mapping.source.id,
+                        auto_mapped=True
+                    )
+                )
+
+            if expense_attributes_to_be_updated:
+                ExpenseAttribute.objects.bulk_update(
+                    expense_attributes_to_be_updated, fields=['auto_mapped'], batch_size=50)
+
         return mappings
