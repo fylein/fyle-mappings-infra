@@ -2,6 +2,7 @@ import importlib
 from typing import List, Dict
 
 from django.db import models, transaction
+from django.db.models import Q
 from django.contrib.postgres.fields import JSONField
 
 from .exceptions import BulkError
@@ -334,6 +335,27 @@ class Mapping(models.Model):
         return mapping
 
     @staticmethod
+    def create_mappings_and_update_flag(mapping_batch: list, set_auto_mapped_flag: bool = True):
+        mappings = Mapping.objects.bulk_create(mapping_batch, batch_size=50)
+
+        if set_auto_mapped_flag:
+            expense_attributes_to_be_updated = []
+
+            for mapping in mappings:
+                expense_attributes_to_be_updated.append(
+                    ExpenseAttribute(
+                        id=mapping.source.id,
+                        auto_mapped=True
+                    )
+                )
+
+            if expense_attributes_to_be_updated:
+                ExpenseAttribute.objects.bulk_update(
+                    expense_attributes_to_be_updated, fields=['auto_mapped'], batch_size=50)
+
+        return mappings
+
+    @staticmethod
     def bulk_create_mappings(destination_attributes: List[DestinationAttribute], source_type: str,
                              destination_type: str, workspace_id: int, set_auto_mapped_flag: bool = True):
         """
@@ -372,21 +394,108 @@ class Mapping(models.Model):
                     )
                 )
 
-        mappings = Mapping.objects.bulk_create(mapping_batch, batch_size=50)
+        return Mapping.create_mappings_and_update_flag(mapping_batch, set_auto_mapped_flag)
 
-        if set_auto_mapped_flag:
-            expense_attributes_to_be_updated = []
+    @staticmethod
+    def auto_map_employees(source_type: str, destination_type: str,
+                           employee_mapping_preference: str, workspace_id: int):
+        """
+        Auto map employees
+        :param source_type: Source type of mappings
+        :param destination_type: Destination Type of mappings
+        :param employee_mapping_preference: Employee Mapping Preference
+        :param workspace_id: workspace_id
+        """
+        # Filtering only not mapped destination attributes
+        employee_destination_attributes = DestinationAttribute.objects.filter(
+            attribute_type=destination_type, workspace_id=workspace_id, mapping__destination_id__isnull=True).all()
 
-            for mapping in mappings:
-                expense_attributes_to_be_updated.append(
-                    ExpenseAttribute(
-                        id=mapping.source.id,
-                        auto_mapped=True
+        attribute_values = ''
+        destination_id_value_map = {}
+        for destination_employee in employee_destination_attributes:
+            value_to_be_appended = None
+            if employee_mapping_preference == 'EMAIL' and destination_employee.detail \
+                and destination_employee.detail['email']:
+                value_to_be_appended = destination_employee.detail['email']
+            elif employee_mapping_preference in ['NAME', 'EMPLOYEE_CODE']:
+                value_to_be_appended = destination_employee.value
+
+            if value_to_be_appended:
+                attribute_values = '{}|{}'.format(attribute_values, value_to_be_appended.lower())
+                destination_id_value_map[value_to_be_appended.lower()] = destination_employee.id
+
+        mapping_batch = []
+
+        if employee_mapping_preference == 'EMAIL':
+            filter_on = 'value__iregex'
+        elif employee_mapping_preference == 'NAME':
+            filter_on = 'detail__full_name__iregex'
+        elif employee_mapping_preference == 'EMPLOYEE_CODE':
+            filter_on = 'detail__employee_code__iregex'
+
+        destination_values_filter = {
+            filter_on: '({})'.format(attribute_values[1:]) # removing first character |
+        }
+
+        employee_source_attributes = ExpenseAttribute.objects.filter(
+            attribute_type=source_type, workspace_id=workspace_id, auto_mapped=False,
+            **destination_values_filter
+        ).all()
+
+        for source_attribute in employee_source_attributes:
+            if employee_mapping_preference == 'EMAIL':
+                source_value = source_attribute.value
+            elif employee_mapping_preference == 'NAME':
+                source_value = source_attribute.detail['full_name']
+            elif employee_mapping_preference == 'EMPLOYEE_CODE':
+                source_value = source_attribute.detail['employee_code']
+
+            # Checking exact match
+            if source_value.lower() in destination_id_value_map:
+                destination_id = destination_id_value_map[source_value.lower()]
+                mapping_batch.append(
+                    Mapping(
+                        source_type=source_type,
+                        destination_type=destination_type,
+                        source_id=source_attribute.id,
+                        destination_id=destination_id,
+                        workspace_id=workspace_id
                     )
                 )
 
-            if expense_attributes_to_be_updated:
-                ExpenseAttribute.objects.bulk_update(
-                    expense_attributes_to_be_updated, fields=['auto_mapped'], batch_size=50)
+        Mapping.create_mappings_and_update_flag(mapping_batch)
 
-        return mappings
+
+    @staticmethod
+    def auto_map_ccc_employees(source_type: str, destination_type: str,
+                               default_ccc_account_id: str, workspace_id: int):
+        """
+        Auto map employees
+        :param source_type: Source type of mappings
+        :param destination_type: Destination Type of mappings
+        :param default_ccc_account_id: Default CCC Account
+        :param workspace_id: workspace_id
+        """
+        # Filtering only employees which doesn't have ccc mapping
+        employee_source_attributes = ExpenseAttribute.objects.filter(
+            ~Q(mapping__destination_type=destination_type),
+            attribute_type=source_type, workspace_id=workspace_id
+        ).all()
+
+        default_destination_attribute = DestinationAttribute.objects.filter(
+            destination_id=default_ccc_account_id
+        ).first()
+
+        mapping_batch = []
+        for source_emp in employee_source_attributes:
+            mapping_batch.append(
+                Mapping(
+                    source_type=source_type,
+                    destination_type=destination_type,
+                    source_id=source_emp.id,
+                    destination_id=default_destination_attribute.id,
+                    workspace_id=workspace_id
+                )
+            )
+
+        Mapping.objects.bulk_create(mapping_batch, batch_size=50)
