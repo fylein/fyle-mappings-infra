@@ -435,9 +435,10 @@ class Mapping(models.Model):
             filter_on: '({})'.format(attribute_values[1:]) # removing first character |
         }
 
+        # Filtering only employees which doesn't have employee mapping
         employee_source_attributes = ExpenseAttribute.objects.filter(
-            attribute_type='EMPLOYEE', workspace_id=workspace_id, auto_mapped=False,
-            mapping__source_id__isnull=True, **destination_values_filter
+            ~Q(mapping__destination_type='EMPLOYEE'), attribute_type='EMPLOYEE',
+            workspace_id=workspace_id, auto_mapped=False, **destination_values_filter
         ).all()
 
         for source_attribute in employee_source_attributes:
