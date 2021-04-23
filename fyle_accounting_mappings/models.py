@@ -38,6 +38,27 @@ def validate_mapping_settings(mappings_settings: List[Dict]):
         raise BulkError('Errors while creating settings', bulk_errors)
 
 
+def create_mappings_and_update_flag(mapping_batch: list, set_auto_mapped_flag: bool = True):
+    mappings = Mapping.objects.bulk_create(mapping_batch, batch_size=50)
+
+    if set_auto_mapped_flag:
+        expense_attributes_to_be_updated = []
+
+        for mapping in mappings:
+            expense_attributes_to_be_updated.append(
+                ExpenseAttribute(
+                    id=mapping.source.id,
+                    auto_mapped=True
+                )
+            )
+
+        if expense_attributes_to_be_updated:
+            ExpenseAttribute.objects.bulk_update(
+                expense_attributes_to_be_updated, fields=['auto_mapped'], batch_size=50)
+
+    return mappings
+
+
 class ExpenseAttribute(models.Model):
     """
     Fyle Expense Attributes
@@ -89,7 +110,7 @@ class ExpenseAttribute(models.Model):
             'attribute_type': Type of attribute,
             'display_name': Display_name of attribute_field,
             'value': Value of attribute,
-            'destination_id': Destination Id of the attribute,
+            'source_id': Fyle Id of the attribute,
             'detail': Extra Details of the attribute
         }]
         :param workspace_id: Workspace Id
@@ -184,14 +205,14 @@ class DestinationAttribute(models.Model):
     def bulk_create_or_update_destination_attributes(
             attributes: List[Dict], attribute_type: str, workspace_id: int, update: bool = False):
         """
-        Create Expense Attributes in bulk
+        Create Destination Attributes in bulk
         :param update: Update Pre-existing records or not
         :param attribute_type: Attribute type
         :param attributes: attributes = [{
             'attribute_type': Type of attribute,
             'display_name': Display_name of attribute_field,
             'value': Value of attribute,
-            'destination_id': Fyle Id of the attribute,
+            'destination_id': Destination Id of the attribute,
             'detail': Extra Details of the attribute
         }]
         :param workspace_id: Workspace Id
@@ -335,27 +356,6 @@ class Mapping(models.Model):
         return mapping
 
     @staticmethod
-    def create_mappings_and_update_flag(mapping_batch: list, set_auto_mapped_flag: bool = True):
-        mappings = Mapping.objects.bulk_create(mapping_batch, batch_size=50)
-
-        if set_auto_mapped_flag:
-            expense_attributes_to_be_updated = []
-
-            for mapping in mappings:
-                expense_attributes_to_be_updated.append(
-                    ExpenseAttribute(
-                        id=mapping.source.id,
-                        auto_mapped=True
-                    )
-                )
-
-            if expense_attributes_to_be_updated:
-                ExpenseAttribute.objects.bulk_update(
-                    expense_attributes_to_be_updated, fields=['auto_mapped'], batch_size=50)
-
-        return mappings
-
-    @staticmethod
     def bulk_create_mappings(destination_attributes: List[DestinationAttribute], source_type: str,
                              destination_type: str, workspace_id: int, set_auto_mapped_flag: bool = True):
         """
@@ -394,17 +394,15 @@ class Mapping(models.Model):
                     )
                 )
 
-        return Mapping.create_mappings_and_update_flag(mapping_batch, set_auto_mapped_flag)
+        return create_mappings_and_update_flag(mapping_batch, set_auto_mapped_flag)
 
     @staticmethod
-    def auto_map_employees(source_type: str, destination_type: str,
-                           employee_mapping_preference: str, workspace_id: int):
+    def auto_map_employees(destination_type: str, employee_mapping_preference: str, workspace_id: int):
         """
         Auto map employees
-        :param source_type: Source type of mappings
         :param destination_type: Destination Type of mappings
         :param employee_mapping_preference: Employee Mapping Preference
-        :param workspace_id: workspace_id
+        :param workspace_id: Workspace ID
         """
         # Filtering only not mapped destination attributes
         employee_destination_attributes = DestinationAttribute.objects.filter(
@@ -438,7 +436,7 @@ class Mapping(models.Model):
         }
 
         employee_source_attributes = ExpenseAttribute.objects.filter(
-            attribute_type=source_type, workspace_id=workspace_id, auto_mapped=False,
+            attribute_type='EMPLOYEE', workspace_id=workspace_id, auto_mapped=False,
             **destination_values_filter
         ).all()
 
@@ -455,7 +453,7 @@ class Mapping(models.Model):
                 destination_id = destination_id_value_map[source_value.lower()]
                 mapping_batch.append(
                     Mapping(
-                        source_type=source_type,
+                        source_type='EMPLOYEE',
                         destination_type=destination_type,
                         source_id=source_attribute.id,
                         destination_id=destination_id,
@@ -463,23 +461,21 @@ class Mapping(models.Model):
                     )
                 )
 
-        Mapping.create_mappings_and_update_flag(mapping_batch)
+        create_mappings_and_update_flag(mapping_batch)
 
 
     @staticmethod
-    def auto_map_ccc_employees(source_type: str, destination_type: str,
-                               default_ccc_account_id: str, workspace_id: int):
+    def auto_map_ccc_employees(destination_type: str, default_ccc_account_id: str, workspace_id: int):
         """
-        Auto map employees
-        :param source_type: Source type of mappings
+        Auto map ccc employees
         :param destination_type: Destination Type of mappings
         :param default_ccc_account_id: Default CCC Account
-        :param workspace_id: workspace_id
+        :param workspace_id: Workspace ID
         """
         # Filtering only employees which doesn't have ccc mapping
         employee_source_attributes = ExpenseAttribute.objects.filter(
             ~Q(mapping__destination_type=destination_type),
-            attribute_type=source_type, workspace_id=workspace_id
+            attribute_type='EMPLOYEE', workspace_id=workspace_id
         ).all()
 
         default_destination_attribute = DestinationAttribute.objects.filter(
@@ -490,7 +486,7 @@ class Mapping(models.Model):
         for source_emp in employee_source_attributes:
             mapping_batch.append(
                 Mapping(
-                    source_type=source_type,
+                    source_type='EMPLOYEE',
                     destination_type=destination_type,
                     source_id=source_emp.id,
                     destination_id=default_destination_attribute.id,
