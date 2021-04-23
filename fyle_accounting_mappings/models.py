@@ -437,7 +437,7 @@ class Mapping(models.Model):
 
         employee_source_attributes = ExpenseAttribute.objects.filter(
             attribute_type='EMPLOYEE', workspace_id=workspace_id, auto_mapped=False,
-            **destination_values_filter
+            mapping__source_id__isnull=True, **destination_values_filter
         ).all()
 
         for source_attribute in employee_source_attributes:
