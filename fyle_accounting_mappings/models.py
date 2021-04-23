@@ -479,7 +479,7 @@ class Mapping(models.Model):
         ).all()
 
         default_destination_attribute = DestinationAttribute.objects.filter(
-            destination_id=default_ccc_account_id
+            destination_id=default_ccc_account_id, workspace_id=workspace_id, attribute_type=destination_type
         ).first()
 
         mapping_batch = []
