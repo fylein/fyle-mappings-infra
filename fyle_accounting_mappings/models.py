@@ -437,8 +437,8 @@ class Mapping(models.Model):
 
         # Filtering only employees which doesn't have employee mapping
         employee_source_attributes = ExpenseAttribute.objects.filter(
-            ~Q(mapping__source_type='EMPLOYEE'), attribute_type='EMPLOYEE',
-            workspace_id=workspace_id, auto_mapped=False, **destination_values_filter
+            ~Q(mapping__source_type='EMPLOYEE') & ~Q(mapping__destination_type=destination_type),
+            attribute_type='EMPLOYEE', workspace_id=workspace_id, auto_mapped=False, **destination_values_filter
         ).all()
 
         for source_attribute in employee_source_attributes:
@@ -475,7 +475,7 @@ class Mapping(models.Model):
         """
         # Filtering only employees which doesn't have ccc mapping
         employee_source_attributes = ExpenseAttribute.objects.filter(
-            ~Q(mapping__destination_type=destination_type),
+            ~Q(mapping__source_type='EMPLOYEE') & ~Q(mapping__destination_type=destination_type),
             attribute_type='EMPLOYEE', workspace_id=workspace_id
         ).all()
 
