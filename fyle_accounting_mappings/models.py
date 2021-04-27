@@ -58,6 +58,17 @@ def create_mappings_and_update_flag(mapping_batch: list, set_auto_mapped_flag: b
 
     return mappings
 
+def get_existing_source_ids(destination_type: str, workspace_id: int):
+    existing_mappings = Mapping.objects.filter(
+        source_type='EMPLOYEE', destination_type=destination_type, workspace_id=workspace_id
+    ).all()
+
+    existing_source_ids = []
+    for mapping in existing_mappings:
+        existing_source_ids.append(mapping.source.id)
+
+    return existing_source_ids
+
 
 class ExpenseAttribute(models.Model):
     """
@@ -406,7 +417,7 @@ class Mapping(models.Model):
         """
         # Filtering only not mapped destination attributes
         employee_destination_attributes = DestinationAttribute.objects.filter(
-            attribute_type=destination_type, workspace_id=workspace_id, mapping__destination_id__isnull=True).all()
+            attribute_type=destination_type, workspace_id=workspace_id).all()
 
         attribute_values = ''
         destination_id_value_map = {}
@@ -435,33 +446,34 @@ class Mapping(models.Model):
             filter_on: '({})'.format(attribute_values[1:]) # removing first character |
         }
 
-        # Filtering only employees which doesn't have employee mapping
         employee_source_attributes = ExpenseAttribute.objects.filter(
-            ~Q(mapping__source_type='EMPLOYEE') & ~Q(mapping__destination_type=destination_type),
             attribute_type='EMPLOYEE', workspace_id=workspace_id, auto_mapped=False, **destination_values_filter
         ).all()
 
+        existing_source_ids = get_existing_source_ids(destination_type, workspace_id)
+
         for source_attribute in employee_source_attributes:
-            if employee_mapping_preference == 'EMAIL':
-                source_value = source_attribute.value
-            elif employee_mapping_preference == 'NAME':
-                source_value = source_attribute.detail['full_name']
-            elif employee_mapping_preference == 'EMPLOYEE_CODE':
-                source_value = source_attribute.detail['employee_code']
+            # Ignoring already present mappings
+            if source_attribute.id not in existing_source_ids:
+                if employee_mapping_preference == 'EMAIL':
+                    source_value = source_attribute.value
+                elif employee_mapping_preference == 'NAME':
+                    source_value = source_attribute.detail['full_name']
+                elif employee_mapping_preference == 'EMPLOYEE_CODE':
+                    source_value = source_attribute.detail['employee_code']
 
-            # Checking exact match
-            if source_value.lower() in destination_id_value_map:
-                destination_id = destination_id_value_map[source_value.lower()]
-                mapping_batch.append(
-                    Mapping(
-                        source_type='EMPLOYEE',
-                        destination_type=destination_type,
-                        source_id=source_attribute.id,
-                        destination_id=destination_id,
-                        workspace_id=workspace_id
+                # Checking exact match
+                if source_value.lower() in destination_id_value_map:
+                    destination_id = destination_id_value_map[source_value.lower()]
+                    mapping_batch.append(
+                        Mapping(
+                            source_type='EMPLOYEE',
+                            destination_type=destination_type,
+                            source_id=source_attribute.id,
+                            destination_id=destination_id,
+                            workspace_id=workspace_id
+                        )
                     )
-                )
-
         create_mappings_and_update_flag(mapping_batch)
 
 
@@ -473,9 +485,7 @@ class Mapping(models.Model):
         :param default_ccc_account_id: Default CCC Account
         :param workspace_id: Workspace ID
         """
-        # Filtering only employees which doesn't have ccc mapping
         employee_source_attributes = ExpenseAttribute.objects.filter(
-            ~Q(mapping__source_type='EMPLOYEE') & ~Q(mapping__destination_type=destination_type),
             attribute_type='EMPLOYEE', workspace_id=workspace_id
         ).all()
 
@@ -483,16 +493,20 @@ class Mapping(models.Model):
             destination_id=default_ccc_account_id, workspace_id=workspace_id, attribute_type=destination_type
         ).first()
 
+        existing_source_ids = get_existing_source_ids(destination_type, workspace_id)
+
         mapping_batch = []
-        for source_emp in employee_source_attributes:
-            mapping_batch.append(
-                Mapping(
-                    source_type='EMPLOYEE',
-                    destination_type=destination_type,
-                    source_id=source_emp.id,
-                    destination_id=default_destination_attribute.id,
-                    workspace_id=workspace_id
+        for source_employee in employee_source_attributes:
+            # Ignoring already present mappings
+            if source_employee.id not in existing_source_ids:
+                mapping_batch.append(
+                    Mapping(
+                        source_type='EMPLOYEE',
+                        destination_type=destination_type,
+                        source_id=source_employee.id,
+                        destination_id=default_destination_attribute.id,
+                        workspace_id=workspace_id
+                    )
                 )
-            )
 
         Mapping.objects.bulk_create(mapping_batch, batch_size=50)
