@@ -2,7 +2,6 @@ import importlib
 from typing import List, Dict
 
 from django.db import models, transaction
-from django.db.models import Q
 from django.contrib.postgres.fields import JSONField
 
 from .exceptions import BulkError
@@ -57,6 +56,37 @@ def create_mappings_and_update_flag(mapping_batch: list, set_auto_mapped_flag: b
                 expense_attributes_to_be_updated, fields=['auto_mapped'], batch_size=50)
 
     return mappings
+
+def construct_mapping_payload(employee_source_attributes: list, employee_mapping_preference: str,
+                              destination_id_value_map: dict, destination_type: str, workspace_id: int):
+    existing_source_ids = get_existing_source_ids(destination_type, workspace_id)
+
+    mapping_batch = []
+    for source_attribute in employee_source_attributes:
+        # Ignoring already present mappings
+        if source_attribute.id not in existing_source_ids:
+            if employee_mapping_preference == 'EMAIL':
+                source_value = source_attribute.value
+            elif employee_mapping_preference == 'NAME':
+                source_value = source_attribute.detail['full_name']
+            elif employee_mapping_preference == 'EMPLOYEE_CODE':
+                source_value = source_attribute.detail['employee_code']
+
+            # Checking exact match
+            if source_value.lower() in destination_id_value_map:
+                destination_id = destination_id_value_map[source_value.lower()]
+                mapping_batch.append(
+                    Mapping(
+                        source_type='EMPLOYEE',
+                        destination_type=destination_type,
+                        source_id=source_attribute.id,
+                        destination_id=destination_id,
+                        workspace_id=workspace_id
+                    )
+                )
+
+    return mapping_batch
+
 
 def get_existing_source_ids(destination_type: str, workspace_id: int):
     existing_mappings = Mapping.objects.filter(
@@ -433,8 +463,6 @@ class Mapping(models.Model):
                 attribute_values = '{}|{}'.format(attribute_values, value_to_be_appended.lower())
                 destination_id_value_map[value_to_be_appended.lower()] = destination_employee.id
 
-        mapping_batch = []
-
         if employee_mapping_preference == 'EMAIL':
             filter_on = 'value__iregex'
         elif employee_mapping_preference == 'NAME':
@@ -450,30 +478,11 @@ class Mapping(models.Model):
             attribute_type='EMPLOYEE', workspace_id=workspace_id, auto_mapped=False, **destination_values_filter
         ).all()
 
-        existing_source_ids = get_existing_source_ids(destination_type, workspace_id)
+        mapping_batch = construct_mapping_payload(
+            employee_source_attributes, employee_mapping_preference,
+            destination_id_value_map, destination_type, workspace_id
+        )
 
-        for source_attribute in employee_source_attributes:
-            # Ignoring already present mappings
-            if source_attribute.id not in existing_source_ids:
-                if employee_mapping_preference == 'EMAIL':
-                    source_value = source_attribute.value
-                elif employee_mapping_preference == 'NAME':
-                    source_value = source_attribute.detail['full_name']
-                elif employee_mapping_preference == 'EMPLOYEE_CODE':
-                    source_value = source_attribute.detail['employee_code']
-
-                # Checking exact match
-                if source_value.lower() in destination_id_value_map:
-                    destination_id = destination_id_value_map[source_value.lower()]
-                    mapping_batch.append(
-                        Mapping(
-                            source_type='EMPLOYEE',
-                            destination_type=destination_type,
-                            source_id=source_attribute.id,
-                            destination_id=destination_id,
-                            workspace_id=workspace_id
-                        )
-                    )
         create_mappings_and_update_flag(mapping_batch)
 
 
