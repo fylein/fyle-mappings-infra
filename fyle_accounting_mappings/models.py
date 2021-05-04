@@ -455,9 +455,9 @@ class Mapping(models.Model):
             value_to_be_appended = None
             if employee_mapping_preference == 'EMAIL' and destination_employee.detail \
                 and destination_employee.detail['email']:
-                value_to_be_appended = destination_employee.detail['email']
+                value_to_be_appended = destination_employee.detail['email'].replace('*', '')
             elif employee_mapping_preference in ['NAME', 'EMPLOYEE_CODE']:
-                value_to_be_appended = destination_employee.value
+                value_to_be_appended = destination_employee.value.replace('*', '')
 
             if value_to_be_appended:
                 attribute_values = '{}|{}'.format(attribute_values, value_to_be_appended.lower())
