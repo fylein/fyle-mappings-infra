@@ -414,7 +414,8 @@ class Mapping(models.Model):
             attribute_value_list.append(destination_attribute.value)
 
         source_attributes: List[ExpenseAttribute] = ExpenseAttribute.objects.filter(
-            value__in=attribute_value_list, workspace_id=workspace_id, mapping__source_id__isnull=True).all()
+            value__in=attribute_value_list, workspace_id=workspace_id,
+            attribute_type=source_type, mapping__source_id__isnull=True).all()
 
         source_value_id_map = {}
 
