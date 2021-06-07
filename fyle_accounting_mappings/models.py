@@ -323,6 +323,7 @@ class MappingSetting(models.Model):
     updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
 
     class Meta:
+        unique_together = ('source_field', 'destination_field', 'workspace')
         db_table = 'mapping_settings'
 
     @staticmethod
@@ -341,8 +342,8 @@ class MappingSetting(models.Model):
                     destination_field=setting['destination_field'],
                     expense_field_id=setting['expense_field_id'],
                     defaults={
-                        'import_to_fyle': setting['import_to_fyle'],
-                        'is_custom': setting['is_custom']
+                        'import_to_fyle': setting['import_to_fyle'] if 'import_to_fyle' in setting else False,
+                        'is_custom': setting['is_custom'] if 'is_custom' in setting else False
                     }
                 )
                 mapping_settings.append(mapping_setting)
