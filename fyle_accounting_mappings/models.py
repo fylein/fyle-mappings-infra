@@ -314,7 +314,10 @@ class MappingSetting(models.Model):
     """
     id = models.AutoField(primary_key=True)
     source_field = models.CharField(max_length=255, help_text='Source mapping field')
-    destination_field = models.CharField(max_length=40, help_text='Destination mapping field', null=True)
+    destination_field = models.CharField(max_length=255, help_text='Destination mapping field')
+    expense_field_id = models.IntegerField(null=True, unique=True, help_text='Expense Field ID')
+    import_to_fyle = models.BooleanField(default=False, help_text='Import to Fyle or not')
+    is_custom = models.BooleanField(default=False, help_text='Custom Field or not')
     workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
     created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
     updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
@@ -332,10 +335,15 @@ class MappingSetting(models.Model):
 
         with transaction.atomic():
             for setting in settings:
-                mapping_setting, _ = MappingSetting.objects.get_or_create(
+                mapping_setting, _ = MappingSetting.objects.update_or_create(
                     source_field=setting['source_field'],
                     workspace_id=workspace_id,
-                    destination_field=setting['destination_field']
+                    destination_field=setting['destination_field'],
+                    expense_field_id=setting['expense_field_id'],
+                    defaults={
+                        'import_to_fyle': setting['import_to_fyle'],
+                        'is_custom': setting['is_custom']
+                    }
                 )
                 mapping_settings.append(mapping_setting)
 
