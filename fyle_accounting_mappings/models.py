@@ -267,16 +267,19 @@ class DestinationAttribute(models.Model):
 
         existing_attributes = DestinationAttribute.objects.filter(
             destination_id__in=attribute_destination_id_list, attribute_type=attribute_type,
-            workspace_id=workspace_id).all()
-            # TODO: replace .all()
+            workspace_id=workspace_id).values('id', 'value', 'destination_id', 'detail')
 
         existing_attribute_destination_ids = []
 
         primary_key_map = {}
 
         for existing_attribute in existing_attributes:
-            existing_attribute_destination_ids.append(existing_attribute.destination_id)
-            primary_key_map[existing_attribute.destination_id] = existing_attribute.id
+            existing_attribute_destination_ids.append(existing_attribute['destination_id'])
+            primary_key_map[existing_attribute['destination_id']] = {
+                'id': existing_attribute['id'],
+                'value': existing_attribute['value'],
+                'detail': existing_attribute['detail']
+            }
 
         attributes_to_be_created = []
         attributes_to_be_updated = []
@@ -297,15 +300,17 @@ class DestinationAttribute(models.Model):
                     )
                 )
             else:
-                # TODO: update only when there are changes
                 if update:
-                    attributes_to_be_updated.append(
-                        DestinationAttribute(
-                            id=primary_key_map[attribute['destination_id']],
-                            value=attribute['value'],
-                            detail=attribute['detail'] if 'detail' in attribute else None,
+                    if (attribute['value'] != primary_key_map[attribute['destination_id']]['value']) or \
+                        ('detail' in attribute and \
+                            attribute['detail'] != primary_key_map[attribute['destination_id']]['detail']):
+                        attributes_to_be_updated.append(
+                            DestinationAttribute(
+                                id=primary_key_map[attribute['destination_id']]['id'],
+                                value=attribute['value'],
+                                detail=attribute['detail'] if 'detail' in attribute else None,
+                            )
                         )
-                    )
         if attributes_to_be_created:
             DestinationAttribute.objects.bulk_create(attributes_to_be_created, batch_size=50)
 
