@@ -161,15 +161,18 @@ class ExpenseAttribute(models.Model):
 
         existing_attributes = ExpenseAttribute.objects.filter(
             value__in=attribute_value_list, attribute_type=attribute_type,
-            workspace_id=workspace_id).all()
+            workspace_id=workspace_id).values('id', 'value', 'detail')
 
         existing_attribute_values = []
 
         primary_key_map = {}
 
         for existing_attribute in existing_attributes:
-            existing_attribute_values.append(existing_attribute.value)
-            primary_key_map[existing_attribute.value] = existing_attribute.id
+            existing_attribute_values.append(existing_attribute['value'])
+            primary_key_map[existing_attribute['value']] = {
+                'id': existing_attribute['id'],
+                'detail': existing_attribute['detail']
+            }
 
         attributes_to_be_created = []
         attributes_to_be_updated = []
@@ -189,11 +192,12 @@ class ExpenseAttribute(models.Model):
                     )
                 )
             else:
-                if update:
+                if update and 'detail' in attribute and \
+                    attribute['detail'] != primary_key_map[attribute['value']]['detail']:
                     attributes_to_be_updated.append(
                         ExpenseAttribute(
-                            id=primary_key_map[attribute['value']],
-                            detail=attribute['detail'] if 'detail' in attribute else None,
+                            id=primary_key_map[attribute['value']]['id'],
+                            detail=attribute['detail'],
                         )
                     )
         if attributes_to_be_created:
@@ -263,15 +267,19 @@ class DestinationAttribute(models.Model):
 
         existing_attributes = DestinationAttribute.objects.filter(
             destination_id__in=attribute_destination_id_list, attribute_type=attribute_type,
-            workspace_id=workspace_id).all()
+            workspace_id=workspace_id).values('id', 'value', 'destination_id', 'detail')
 
         existing_attribute_destination_ids = []
 
         primary_key_map = {}
 
         for existing_attribute in existing_attributes:
-            existing_attribute_destination_ids.append(existing_attribute.destination_id)
-            primary_key_map[existing_attribute.destination_id] = existing_attribute.id
+            existing_attribute_destination_ids.append(existing_attribute['destination_id'])
+            primary_key_map[existing_attribute['destination_id']] = {
+                'id': existing_attribute['id'],
+                'value': existing_attribute['value'],
+                'detail': existing_attribute['detail']
+            }
 
         attributes_to_be_created = []
         attributes_to_be_updated = []
@@ -293,13 +301,16 @@ class DestinationAttribute(models.Model):
                 )
             else:
                 if update:
-                    attributes_to_be_updated.append(
-                        DestinationAttribute(
-                            id=primary_key_map[attribute['destination_id']],
-                            value=attribute['value'],
-                            detail=attribute['detail'] if 'detail' in attribute else None,
+                    if (attribute['value'] != primary_key_map[attribute['destination_id']]['value']) or \
+                        ('detail' in attribute and \
+                            attribute['detail'] != primary_key_map[attribute['destination_id']]['detail']):
+                        attributes_to_be_updated.append(
+                            DestinationAttribute(
+                                id=primary_key_map[attribute['destination_id']]['id'],
+                                value=attribute['value'],
+                                detail=attribute['detail'] if 'detail' in attribute else None,
+                            )
                         )
-                    )
         if attributes_to_be_created:
             DestinationAttribute.objects.bulk_create(attributes_to_be_created, batch_size=50)
 
