@@ -2,7 +2,7 @@
 Mapping Serializers
 """
 from rest_framework import serializers
-from .models import ExpenseAttribute, DestinationAttribute, MappingSetting, Mapping
+from .models import ExpenseAttribute, DestinationAttribute, Mapping
 
 
 class ExpenseAttributeSerializer(serializers.ModelSerializer):
@@ -20,15 +20,6 @@ class DestinationAttributeSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = DestinationAttribute
-        fields = '__all__'
-
-
-class MappingSettingSerializer(serializers.ModelSerializer):
-    """
-    Mapping Setting serializer
-    """
-    class Meta:
-        model = MappingSetting
         fields = '__all__'
 
 
