@@ -2,7 +2,7 @@
 Mapping Serializers
 """
 from rest_framework import serializers
-from .models import ExpenseAttribute, DestinationAttribute, MappingSetting, Mapping
+from .models import ExpenseAttribute, DestinationAttribute, Mapping
 
 
 class ExpenseAttributeSerializer(serializers.ModelSerializer):
