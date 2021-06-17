@@ -23,15 +23,6 @@ class DestinationAttributeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class MappingSettingSerializer(serializers.ModelSerializer):
-    """
-    Mapping Setting serializer
-    """
-    class Meta:
-        model = MappingSetting
-        fields = '__all__'
-
-
 class MappingSerializer(serializers.ModelSerializer):
     """
     Mapping serializer
