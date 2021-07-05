@@ -15,8 +15,9 @@ Including another URLconf
 """
 from django.urls import path
 
-from .views import MappingsView
+from .views import MappingSettingsView, MappingsView
 
 urlpatterns = [
+    path('settings/', MappingSettingsView.as_view()),
     path('', MappingsView.as_view())
 ]
