@@ -57,6 +57,7 @@ def create_mappings_and_update_flag(mapping_batch: list, set_auto_mapped_flag: b
 
     return mappings
 
+
 def construct_mapping_payload(employee_source_attributes: list, employee_mapping_preference: str,
                               destination_id_value_map: dict, destination_type: str, workspace_id: int):
     existing_source_ids = get_existing_source_ids(destination_type, workspace_id)
@@ -193,7 +194,7 @@ class ExpenseAttribute(models.Model):
                 )
             else:
                 if update and 'detail' in attribute and \
-                    attribute['detail'] != primary_key_map[attribute['value']]['detail']:
+                        attribute['detail'] != primary_key_map[attribute['value']]['detail']:
                     attributes_to_be_updated.append(
                         ExpenseAttribute(
                             id=primary_key_map[attribute['value']]['id'],
@@ -302,8 +303,8 @@ class DestinationAttribute(models.Model):
             else:
                 if update:
                     if (attribute['value'] != primary_key_map[attribute['destination_id']]['value']) or \
-                        ('detail' in attribute and \
-                            attribute['detail'] != primary_key_map[attribute['destination_id']]['detail']):
+                            ('detail' in attribute and
+                             attribute['detail'] != primary_key_map[attribute['destination_id']]['detail']):
                         attributes_to_be_updated.append(
                             DestinationAttribute(
                                 id=primary_key_map[attribute['destination_id']]['id'],
@@ -473,7 +474,7 @@ class Mapping(models.Model):
         for destination_employee in employee_destination_attributes:
             value_to_be_appended = None
             if employee_mapping_preference == 'EMAIL' and destination_employee.detail \
-                and destination_employee.detail['email']:
+                    and destination_employee.detail['email']:
                 value_to_be_appended = destination_employee.detail['email'].replace('*', '')
             elif employee_mapping_preference in ['NAME', 'EMPLOYEE_CODE']:
                 value_to_be_appended = destination_employee.value.replace('*', '')
@@ -490,7 +491,7 @@ class Mapping(models.Model):
             filter_on = 'detail__employee_code__iregex'
 
         destination_values_filter = {
-            filter_on: '({})'.format(attribute_values[1:]) # removing first character |
+            filter_on: '({})'.format(attribute_values[1:])  # removing first character |
         }
 
         employee_source_attributes = ExpenseAttribute.objects.filter(
@@ -503,7 +504,6 @@ class Mapping(models.Model):
         )
 
         create_mappings_and_update_flag(mapping_batch)
-
 
     @staticmethod
     def auto_map_ccc_employees(destination_type: str, default_ccc_account_id: str, workspace_id: int):
@@ -538,3 +538,41 @@ class Mapping(models.Model):
                 )
 
         Mapping.objects.bulk_create(mapping_batch, batch_size=50)
+
+
+class EmployeeMapping(models.Model):
+    """
+    Employee Mappings
+    """
+    id = models.AutoField(primary_key=True)
+    source_employee = models.OneToOneField(ExpenseAttribute, on_delete=models.PROTECT)
+    destination_employee = models.ForeignKey(
+        DestinationAttribute, on_delete=models.PROTECT, null=True, related_name='destination_employee')
+    destination_vendor = models.ForeignKey(
+        DestinationAttribute, on_delete=models.PROTECT, null=True, related_name='destination_vendor')
+    destination_card_account = models.ForeignKey(
+        DestinationAttribute, on_delete=models.PROTECT, null=True, related_name='destination_card_account')
+    workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
+    created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
+    updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
+
+    class Meta:
+        db_table = 'employee_mappings'
+
+
+class CategoryMapping(models.Model):
+    """
+    Category Mappings
+    """
+    id = models.AutoField(primary_key=True)
+    source_category = models.OneToOneField(ExpenseAttribute, on_delete=models.PROTECT)
+    destination_account = models.ForeignKey(
+        DestinationAttribute, on_delete=models.PROTECT, null=True, related_name='destination_account')
+    destination_expense_head = models.ForeignKey(
+        DestinationAttribute, on_delete=models.PROTECT, null=True, related_name='destination_expense_head')
+    workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
+    created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
+    updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
+
+    class Meta:
+        db_table = 'category_mappings'
