@@ -31,7 +31,7 @@ class DestinationAttributeSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = (
             'value', 'attribute_type', 'destination_id', 'workspace', 'detail',
-            'auto_mapped', 'auto_created', 'active', 'display_name'
+            'auto_created', 'active', 'display_name'
         )
 
 
