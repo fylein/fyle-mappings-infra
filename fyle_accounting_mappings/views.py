@@ -114,8 +114,6 @@ class EmployeeMappingsView(ListCreateAPIView):
     """
     Employee Mappings View
     """
-    authentication_classes = []
-    permission_classes = []
     serializer_class = EmployeeMappingSerializer
 
     def get_queryset(self):
