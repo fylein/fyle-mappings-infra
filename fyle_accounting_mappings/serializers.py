@@ -77,7 +77,7 @@ class EmployeeMappingSerializer(serializers.ModelSerializer):
         ).first()
 
         if not attribute:
-            raise serializers.ValidationError("No attribute found with this attribute id")
+            raise serializers.ValidationError('No attribute found with this attribute id')
         return source_employee
 
     def create(self, validated_data):
