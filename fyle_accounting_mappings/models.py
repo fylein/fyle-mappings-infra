@@ -388,13 +388,15 @@ class Mapping(models.Model):
         destination_value = 'Destination value to be mapped, eg. account name'
         workspace_id = Unique Workspace id
         """
-        settings = MappingSetting.objects.filter(source_field=source_type, destination_field=destination_type,
-                                                 workspace_id=workspace_id).first()
+        # TODO: remove this hack once we move to employee_mappings table
+        if source_type != 'EMPLOYEE':
+            settings = MappingSetting.objects.filter(source_field=source_type, destination_field=destination_type,
+                                                    workspace_id=workspace_id).first()
 
-        assert_valid(
-            settings is not None and settings != [],
-            'Settings for Destination  {0} / Source {1} not found'.format(destination_type, source_type)
-        )
+            assert_valid(
+                settings is not None and settings != [],
+                'Settings for Destination  {0} / Source {1} not found'.format(destination_type, source_type)
+            )
 
         mapping, _ = Mapping.objects.update_or_create(
             source_type=source_type,
