@@ -391,7 +391,7 @@ class Mapping(models.Model):
         # TODO: remove this hack once we move to employee_mappings table
         if source_type != 'EMPLOYEE':
             settings = MappingSetting.objects.filter(source_field=source_type, destination_field=destination_type,
-                                                    workspace_id=workspace_id).first()
+                                                     workspace_id=workspace_id).first()
 
             assert_valid(
                 settings is not None and settings != [],
