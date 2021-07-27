@@ -117,4 +117,6 @@ class EmployeeMappingsView(ListCreateAPIView):
     serializer_class = EmployeeMappingSerializer
 
     def get_queryset(self):
-        return EmployeeMapping.objects.filter(workspace_id=self.kwargs['workspace_id']).all()
+        return EmployeeMapping.objects.filter(
+            workspace_id=self.kwargs['workspace_id']
+        ).all().order_by('source_employee__value')
