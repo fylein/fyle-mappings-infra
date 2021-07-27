@@ -61,9 +61,9 @@ class EmployeeMappingSerializer(serializers.ModelSerializer):
     Mapping serializer
     """
     source_employee = ExpenseAttributeSerializer(required=True)
-    destination_employee = DestinationAttributeSerializer()
-    destination_vendor = DestinationAttributeSerializer()
-    destination_card_account = DestinationAttributeSerializer()
+    destination_employee = DestinationAttributeSerializer(allow_null=True)
+    destination_vendor = DestinationAttributeSerializer(allow_null=True)
+    destination_card_account = DestinationAttributeSerializer(allow_null=True)
 
     class Meta:
         model = EmployeeMapping
@@ -80,20 +80,54 @@ class EmployeeMappingSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('No attribute found with this attribute id')
         return source_employee
 
+    def validate_destination_employee(self, destination_employee):
+        if destination_employee and 'id' in destination_employee:
+            attribute = DestinationAttribute.objects.filter(
+                id=destination_employee['id'],
+                workspace_id=self.initial_data['workspace'],
+                attribute_type='EMPLOYEE'
+            ).first()
+
+            if not attribute:
+                raise serializers.ValidationError('No attribute found with this attribute id')
+        return destination_employee
+
+    def validate_destination_vendor(self, destination_vendor):
+        if destination_vendor and 'id' in destination_vendor:
+            attribute = DestinationAttribute.objects.filter(
+                id=destination_vendor['id'],
+                workspace_id=self.initial_data['workspace'],
+                attribute_type='VENDOR'
+            ).first()
+
+            if not attribute:
+                raise serializers.ValidationError('No attribute found with this attribute id')
+        return destination_vendor
+
+    def validate_destination_card_account(self, destination_card_account):
+        if destination_card_account and 'id' in destination_card_account:
+            attribute = DestinationAttribute.objects.filter(
+                id=destination_card_account['id'],
+                workspace_id=self.initial_data['workspace'],
+                attribute_type='CREDIT_CARD_ACCOUNT'
+            ).first()
+
+            if not attribute:
+                raise serializers.ValidationError('No attribute found with this attribute id')
+        return destination_card_account
+
     def create(self, validated_data):
         """
         Validated Data to be created
         :param validated_data:
         :return: Created Entry
         """
-        employee_mapping, _ = EmployeeMapping.objects.update_or_create(
+        employee_mapping, _ = EmployeeMapping.create_or_update_employee_mapping(
             source_employee_id=validated_data['source_employee']['id'],
             workspace=validated_data['workspace'],
-            defaults={
-                'destination_employee_id': validated_data['destination_employee']['id'],
-                'destination_vendor_id': validated_data['destination_vendor']['id'],
-                'destination_card_account_id': validated_data['destination_card_account']['id']
-            }
+            destination_employee_id=validated_data['destination_employee']['id'],
+            destination_vendor_id=validated_data['destination_vendor']['id'],
+            destination_card_account_id=validated_data['destination_card_account']['id']
         )
 
         return employee_mapping

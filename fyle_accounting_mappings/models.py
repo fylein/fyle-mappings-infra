@@ -559,6 +559,32 @@ class EmployeeMapping(models.Model):
     class Meta:
         db_table = 'employee_mappings'
 
+    @staticmethod
+    def create_or_update_employee_mapping(
+            source_employee_id: int, workspace: Workspace,
+            destination_employee_id: int = None, destination_vendor_id: int = None,
+            destination_card_account_id: int = None):
+        """
+        Create single instance of employee mappings
+        :param source_employee_id: employee expense attribute id
+        :param workspace: workspace instance
+        :param destination_employee_id: employee destination attribute id
+        :param destination_vendor_id: vendor destination attribute id
+        :param destination_card_account_id: card destination attribute id
+        :return:
+        """
+        employee_mapping, _ = EmployeeMapping.objects.update_or_create(
+            source_employee_id=source_employee_id,
+            workspace=workspace,
+            defaults={
+                'destination_employee_id': destination_employee_id,
+                'destination_vendor_id': destination_vendor_id,
+                'destination_card_account_id': destination_card_account_id
+            }
+        )
+
+        return employee_mapping
+
 
 class CategoryMapping(models.Model):
     """
