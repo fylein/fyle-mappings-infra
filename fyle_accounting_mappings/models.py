@@ -493,21 +493,21 @@ class Mapping(models.Model):
             filter_on: '({})'.format(attribute_values[1:]) # removing first character |
         }
 
-        source_attributes_count = ExpenseAttribute.objects.filter(
+        employee_source_attributes_count = ExpenseAttribute.objects.filter(
             attribute_type='EMPLOYEE', workspace_id=workspace_id, auto_mapped=False, **destination_values_filter
         ).count()
         page_size = 200
-        employee_attributes = []
+        employee_source_attributes = []
 
-        for offset in range(0, source_attributes_count, page_size):
+        for offset in range(0, employee_source_attributes_count, page_size):
             limit = offset + page_size
             paginated_employee_source_attributes = ExpenseAttribute.objects.filter(
                 attribute_type='EMPLOYEE', workspace_id=workspace_id, auto_mapped=False, **destination_values_filter
             )[offset:limit]
-            employee_attributes.extend(paginated_employee_source_attributes)
+            employee_source_attributes.extend(paginated_employee_source_attributes)
 
         mapping_batch = construct_mapping_payload(
-            employee_attributes, employee_mapping_preference,
+            employee_source_attributes, employee_mapping_preference,
             destination_id_value_map, destination_type, workspace_id
         )
 
