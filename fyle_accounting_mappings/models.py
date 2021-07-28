@@ -468,7 +468,6 @@ class Mapping(models.Model):
         employee_destination_attributes = DestinationAttribute.objects.filter(
             attribute_type=destination_type, workspace_id=workspace_id).all()
 
-        attribute_values = ''
         destination_id_value_map = {}
         for destination_employee in employee_destination_attributes:
             value_to_be_appended = None
@@ -479,22 +478,10 @@ class Mapping(models.Model):
                 value_to_be_appended = destination_employee.value.replace('*', '')
 
             if value_to_be_appended:
-                attribute_values = '{}|{}'.format(attribute_values, value_to_be_appended.lower())
                 destination_id_value_map[value_to_be_appended.lower()] = destination_employee.id
 
-        if employee_mapping_preference == 'EMAIL':
-            filter_on = 'value__iregex'
-        elif employee_mapping_preference == 'NAME':
-            filter_on = 'detail__full_name__iregex'
-        elif employee_mapping_preference == 'EMPLOYEE_CODE':
-            filter_on = 'detail__employee_code__iregex'
-
-        destination_values_filter = {
-            filter_on: '({})'.format(attribute_values[1:]) # removing first character |
-        }
-
         employee_source_attributes_count = ExpenseAttribute.objects.filter(
-            attribute_type='EMPLOYEE', workspace_id=workspace_id, auto_mapped=False, **destination_values_filter
+            attribute_type='EMPLOYEE', workspace_id=workspace_id, auto_mapped=False
         ).count()
         page_size = 200
         employee_source_attributes = []
@@ -502,7 +489,7 @@ class Mapping(models.Model):
         for offset in range(0, employee_source_attributes_count, page_size):
             limit = offset + page_size
             paginated_employee_source_attributes = ExpenseAttribute.objects.filter(
-                attribute_type='EMPLOYEE', workspace_id=workspace_id, auto_mapped=False, **destination_values_filter
+                attribute_type='EMPLOYEE', workspace_id=workspace_id, auto_mapped=False
             )[offset:limit]
             employee_source_attributes.extend(paginated_employee_source_attributes)
 
