@@ -8,8 +8,8 @@ from django.db.models import Count
 
 from .exceptions import BulkError
 from .utils import assert_valid
-from .models import MappingSetting, Mapping, ExpenseAttribute, DestinationAttribute
-from .serializers import MappingSettingSerializer, MappingSerializer
+from .models import MappingSetting, Mapping, ExpenseAttribute, DestinationAttribute, EmployeeMapping
+from .serializers import MappingSettingSerializer, MappingSerializer, EmployeeMappingSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -108,3 +108,15 @@ class MappingsView(ListCreateAPIView):
                         destination_type, destination_value)
                 }
             )
+
+
+class EmployeeMappingsView(ListCreateAPIView):
+    """
+    Employee Mappings View
+    """
+    serializer_class = EmployeeMappingSerializer
+
+    def get_queryset(self):
+        return EmployeeMapping.objects.filter(
+            workspace_id=self.kwargs['workspace_id']
+        ).all().order_by('source_employee__value')
