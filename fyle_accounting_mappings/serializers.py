@@ -81,7 +81,7 @@ class EmployeeMappingSerializer(serializers.ModelSerializer):
         return source_employee
 
     def validate_destination_employee(self, destination_employee):
-        if destination_employee and 'id' in destination_employee:
+        if destination_employee and 'id' in destination_employee and destination_employee['id']:
             attribute = DestinationAttribute.objects.filter(
                 id=destination_employee['id'],
                 workspace_id=self.initial_data['workspace'],
@@ -93,7 +93,7 @@ class EmployeeMappingSerializer(serializers.ModelSerializer):
         return destination_employee
 
     def validate_destination_vendor(self, destination_vendor):
-        if destination_vendor and 'id' in destination_vendor:
+        if destination_vendor and 'id' in destination_vendor and destination_vendor['id']:
             attribute = DestinationAttribute.objects.filter(
                 id=destination_vendor['id'],
                 workspace_id=self.initial_data['workspace'],
@@ -105,7 +105,7 @@ class EmployeeMappingSerializer(serializers.ModelSerializer):
         return destination_vendor
 
     def validate_destination_card_account(self, destination_card_account):
-        if destination_card_account and 'id' in destination_card_account:
+        if destination_card_account and 'id' in destination_card_account and destination_card_account['id']:
             attribute = DestinationAttribute.objects.filter(
                 id=destination_card_account['id'],
                 workspace_id=self.initial_data['workspace'],
@@ -122,7 +122,7 @@ class EmployeeMappingSerializer(serializers.ModelSerializer):
         :param validated_data:
         :return: Created Entry
         """
-        employee_mapping, _ = EmployeeMapping.create_or_update_employee_mapping(
+        employee_mapping = EmployeeMapping.create_or_update_employee_mapping(
             source_employee_id=validated_data['source_employee']['id'],
             workspace=validated_data['workspace'],
             destination_employee_id=validated_data['destination_employee']['id'],
