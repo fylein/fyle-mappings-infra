@@ -2,6 +2,7 @@
 Mapping Serializers
 """
 from rest_framework import serializers
+from django.db.models.query import Q
 from .models import ExpenseAttribute, DestinationAttribute, Mapping, MappingSetting, EmployeeMapping
 
 
@@ -39,6 +40,7 @@ class MappingSettingSerializer(serializers.ModelSerializer):
     """
     Mapping Setting serializer
     """
+
     class Meta:
         model = MappingSetting
         fields = '__all__'
@@ -107,9 +109,9 @@ class EmployeeMappingSerializer(serializers.ModelSerializer):
     def validate_destination_card_account(self, destination_card_account):
         if destination_card_account and 'id' in destination_card_account and destination_card_account['id']:
             attribute = DestinationAttribute.objects.filter(
+                Q(attribute_type='CREDIT_CARD_ACCOUNT') | Q(attribute_type='CHARGE_CARD_NUMBER'),
                 id=destination_card_account['id'],
-                workspace_id=self.initial_data['workspace'],
-                attribute_type='CREDIT_CARD_ACCOUNT'
+                workspace_id=self.initial_data['workspace']
             ).first()
 
             if not attribute:
