@@ -598,3 +598,26 @@ class CategoryMapping(models.Model):
 
     class Meta:
         db_table = 'category_mappings'
+
+    @staticmethod
+    def create_or_update_category_mapping(
+            source_category_id: int, workspace: Workspace,
+            destination_account_id: int = None, destination_expense_head_id: int = None):
+        """
+        Create single instance of category mappings
+        :param source_category_id: category expense attribute id
+        :param workspace: workspace instance
+        :param destination_account_id: category destination attribute id
+        :param destination_expense_head_id: expense head destination attribute id
+        :return:
+        """
+        category_mapping, _ = CategoryMapping.objects.update_or_create(
+            source_category_id=source_category_id,
+            workspace=workspace,
+            defaults={
+                'destination_account_id': destination_account_id,
+                'destination_expense_head_id': destination_expense_head_id
+            }
+        )
+
+        return category_mapping
