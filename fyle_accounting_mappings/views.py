@@ -127,8 +127,6 @@ class CategoryMappingsView(ListCreateAPIView):
     """
     Category Mappings View
     """
-    authentication_classes = []
-    permission_classes = []
     serializer_class = CategoryMappingSerializer
 
     def get_queryset(self):
