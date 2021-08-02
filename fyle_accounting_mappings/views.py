@@ -8,8 +8,9 @@ from django.db.models import Count
 
 from .exceptions import BulkError
 from .utils import assert_valid
-from .models import MappingSetting, Mapping, ExpenseAttribute, DestinationAttribute, EmployeeMapping
-from .serializers import MappingSettingSerializer, MappingSerializer, EmployeeMappingSerializer
+from .models import MappingSetting, Mapping, ExpenseAttribute, DestinationAttribute, EmployeeMapping, CategoryMapping
+from .serializers import MappingSettingSerializer, MappingSerializer, \
+    EmployeeMappingSerializer, CategoryMappingSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -120,3 +121,15 @@ class EmployeeMappingsView(ListCreateAPIView):
         return EmployeeMapping.objects.filter(
             workspace_id=self.kwargs['workspace_id']
         ).all().order_by('source_employee__value')
+
+
+class CategoryMappingsView(ListCreateAPIView):
+    """
+    Category Mappings View
+    """
+    serializer_class = CategoryMappingSerializer
+
+    def get_queryset(self):
+        return CategoryMapping.objects.filter(
+            workspace_id=self.kwargs['workspace_id']
+        ).all().order_by('source_category__value')

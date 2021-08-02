@@ -3,7 +3,7 @@ Mapping Serializers
 """
 from rest_framework import serializers
 from django.db.models.query import Q
-from .models import ExpenseAttribute, DestinationAttribute, Mapping, MappingSetting, EmployeeMapping
+from .models import ExpenseAttribute, DestinationAttribute, Mapping, MappingSetting, EmployeeMapping, CategoryMapping
 
 
 class ExpenseAttributeSerializer(serializers.ModelSerializer):
@@ -133,3 +133,66 @@ class EmployeeMappingSerializer(serializers.ModelSerializer):
         )
 
         return employee_mapping
+
+
+class CategoryMappingSerializer(serializers.ModelSerializer):
+    """
+    Mapping serializer
+    """
+    source_category = ExpenseAttributeSerializer(required=True)
+    destination_account = DestinationAttributeSerializer(allow_null=True)
+    destination_expense_head = DestinationAttributeSerializer(allow_null=True)
+
+    class Meta:
+        model = CategoryMapping
+        fields = '__all__'
+
+    def validate_source_category(self, source_category):
+        attribute = ExpenseAttribute.objects.filter(
+            id=source_category['id'],
+            workspace_id=self.initial_data['workspace'],
+            attribute_type='CATEGORY'
+        ).first()
+
+        if not attribute:
+            raise serializers.ValidationError('No attribute found with this attribute id')
+        return source_category
+
+    def validate_destination_account(self, destination_account):
+        if destination_account and 'id' in destination_account and destination_account['id']:
+            attribute = DestinationAttribute.objects.filter(
+                id=destination_account['id'],
+                workspace_id=self.initial_data['workspace'],
+                attribute_type='ACCOUNT'
+            ).first()
+
+            if not attribute:
+                raise serializers.ValidationError('No attribute found with this attribute id')
+        return destination_account
+
+    def validate_destination_expense_head(self, destination_expense_head):
+        if destination_expense_head and 'id' in destination_expense_head and destination_expense_head['id']:
+            attribute = DestinationAttribute.objects.filter(
+                Q(attribute_type='EXPENSE_CATEGORY') | Q(attribute_type='EXPENSE_TYPE'),
+                id=destination_expense_head['id'],
+                workspace_id=self.initial_data['workspace']
+            ).first()
+
+            if not attribute:
+                raise serializers.ValidationError('No attribute found with this attribute id')
+        return destination_expense_head
+
+    def create(self, validated_data):
+        """
+        Validated Data to be created
+        :param validated_data:
+        :return: Created Entry
+        """
+        category_mapping = CategoryMapping.create_or_update_category_mapping(
+            source_category_id=validated_data['source_category']['id'],
+            workspace=validated_data['workspace'],
+            destination_expense_head_id=validated_data['destination_expense_head']['id'],
+            destination_account_id=validated_data['destination_account']['id']
+        )
+
+        return category_mapping
