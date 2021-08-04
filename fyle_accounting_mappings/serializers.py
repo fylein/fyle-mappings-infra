@@ -193,7 +193,8 @@ class CategoryMappingSerializer(serializers.ModelSerializer):
             source_category_id=validated_data['source_category']['id'],
             workspace=validated_data['workspace'],
             destination_expense_head_id=validated_data['destination_expense_head']['id'],
-            destination_account_id=validated_data['destination_account']['id']
+            destination_account_id=validated_data['destination_account']['id'],
+            manual_mapping=True
         )
 
         return category_mapping
