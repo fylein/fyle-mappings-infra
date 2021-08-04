@@ -80,6 +80,10 @@ class EmployeeMappingSerializer(serializers.ModelSerializer):
 
         if not attribute:
             raise serializers.ValidationError('No attribute found with this attribute id')
+
+        attribute.auto_mapped = False
+        attribute.save()
+
         return source_employee
 
     def validate_destination_employee(self, destination_employee):
@@ -156,6 +160,10 @@ class CategoryMappingSerializer(serializers.ModelSerializer):
 
         if not attribute:
             raise serializers.ValidationError('No attribute found with this attribute id')
+
+        attribute.auto_mapped = False
+        attribute.save()
+
         return source_category
 
     def validate_destination_account(self, destination_account):
