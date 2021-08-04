@@ -129,7 +129,8 @@ class EmployeeMappingSerializer(serializers.ModelSerializer):
             workspace=validated_data['workspace'],
             destination_employee_id=validated_data['destination_employee']['id'],
             destination_vendor_id=validated_data['destination_vendor']['id'],
-            destination_card_account_id=validated_data['destination_card_account']['id']
+            destination_card_account_id=validated_data['destination_card_account']['id'],
+            manual_mapping=True
         )
 
         return employee_mapping
