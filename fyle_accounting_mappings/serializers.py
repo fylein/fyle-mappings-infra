@@ -92,6 +92,9 @@ class EmployeeMappingSerializer(serializers.ModelSerializer):
 
             if not attribute:
                 raise serializers.ValidationError('No attribute found with this attribute id')
+            else:
+                attribute.auto_mapped = False
+                attribute.save()
         return destination_employee
 
     def validate_destination_vendor(self, destination_vendor):
@@ -129,8 +132,7 @@ class EmployeeMappingSerializer(serializers.ModelSerializer):
             workspace=validated_data['workspace'],
             destination_employee_id=validated_data['destination_employee']['id'],
             destination_vendor_id=validated_data['destination_vendor']['id'],
-            destination_card_account_id=validated_data['destination_card_account']['id'],
-            manual_mapping=True
+            destination_card_account_id=validated_data['destination_card_account']['id']
         )
 
         return employee_mapping
@@ -157,6 +159,9 @@ class CategoryMappingSerializer(serializers.ModelSerializer):
 
         if not attribute:
             raise serializers.ValidationError('No attribute found with this attribute id')
+        else:
+            attribute.auto_mapped = False
+            attribute.save()
         return source_category
 
     def validate_destination_account(self, destination_account):
@@ -193,8 +198,7 @@ class CategoryMappingSerializer(serializers.ModelSerializer):
             source_category_id=validated_data['source_category']['id'],
             workspace=validated_data['workspace'],
             destination_expense_head_id=validated_data['destination_expense_head']['id'],
-            destination_account_id=validated_data['destination_account']['id'],
-            manual_mapping=True
+            destination_account_id=validated_data['destination_account']['id']
         )
 
         return category_mapping

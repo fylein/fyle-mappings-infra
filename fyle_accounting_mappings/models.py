@@ -559,7 +559,7 @@ class EmployeeMapping(models.Model):
     def create_or_update_employee_mapping(
             source_employee_id: int, workspace: Workspace,
             destination_employee_id: int = None, destination_vendor_id: int = None,
-            destination_card_account_id: int = None, manual_mapping: bool = False):
+            destination_card_account_id: int = None):
         """
         Create single instance of employee mappings
         :param source_employee_id: employee expense attribute id
@@ -578,10 +578,6 @@ class EmployeeMapping(models.Model):
                 'destination_card_account_id': destination_card_account_id
             }
         )
-
-        if manual_mapping and employee_mapping.source_employee.auto_mapped:
-            employee_mapping.source_employee.auto_mapped = False
-            employee_mapping.source_employee.save()
 
         return employee_mapping
 
@@ -606,7 +602,7 @@ class CategoryMapping(models.Model):
     @staticmethod
     def create_or_update_category_mapping(
             source_category_id: int, workspace: Workspace,
-            destination_account_id: int = None, destination_expense_head_id: int = None, manual_mapping: bool = False):
+            destination_account_id: int = None, destination_expense_head_id: int = None):
         """
         Create single instance of category mappings
         :param source_category_id: category expense attribute id
@@ -623,9 +619,5 @@ class CategoryMapping(models.Model):
                 'destination_expense_head_id': destination_expense_head_id
             }
         )
-
-        if manual_mapping and category_mapping.source_category.auto_mapped:
-            category_mapping.source_category.auto_mapped = False
-            category_mapping.source_category.save()
 
         return category_mapping
