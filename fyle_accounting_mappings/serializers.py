@@ -80,6 +80,9 @@ class EmployeeMappingSerializer(serializers.ModelSerializer):
 
         if not attribute:
             raise serializers.ValidationError('No attribute found with this attribute id')
+        else:
+            attribute.auto_mapped = False
+            attribute.save()
         return source_employee
 
     def validate_destination_employee(self, destination_employee):
@@ -92,9 +95,7 @@ class EmployeeMappingSerializer(serializers.ModelSerializer):
 
             if not attribute:
                 raise serializers.ValidationError('No attribute found with this attribute id')
-            else:
-                attribute.auto_mapped = False
-                attribute.save()
+
         return destination_employee
 
     def validate_destination_vendor(self, destination_vendor):
