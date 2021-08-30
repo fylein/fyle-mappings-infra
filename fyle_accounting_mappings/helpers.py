@@ -8,7 +8,7 @@ class AutoMapEmployees:
     AutoMapEmployees is a helper class to automatically map employee names
     to employee numbers.
     """
-    def __init__(self, workspace_id: int, destination_type: str = '', employee_mapping_preference: str = ''):
+    def __init__(self, workspace_id: int, destination_type: str, employee_mapping_preference: str = ''):
         """
         Initialize the AutoMapEmployees class.
         """
