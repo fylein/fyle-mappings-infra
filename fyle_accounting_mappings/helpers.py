@@ -3,14 +3,14 @@ from typing import List
 from .models import EmployeeMapping, DestinationAttribute, ExpenseAttribute
 
 
-class AutoMapEmployees:
+class EmployeesAutoMappingHelper:
     """
-    AutoMapEmployees is a helper class to automatically map employee names
+    EmployeesAutoMappingHelper is a helper class to automatically map employee names
     to employee numbers.
     """
     def __init__(self, workspace_id: int, destination_type: str, employee_mapping_preference: str = ''):
         """
-        Initialize the AutoMapEmployees class.
+        Initialize the EmployeesAutoMappingHelper class.
         """
         self.destination_type = destination_type
         self.employee_mapping_preference = employee_mapping_preference
