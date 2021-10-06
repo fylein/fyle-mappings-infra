@@ -207,6 +207,19 @@ class ExpenseAttribute(models.Model):
         if attributes_to_be_updated:
             ExpenseAttribute.objects.bulk_update(attributes_to_be_updated, fields=['detail'], batch_size=50)
 
+    @staticmethod
+    def get_last_synced_at(attribute_type: str, workspace_id: int):
+        """
+        Get last synced at datetime
+        :param attribute_type: Attribute type
+        :param workspace_id: Workspace Id
+        :return: last_synced_at datetime
+        """
+        return ExpenseAttribute.objects.filter(
+            workspace_id=workspace_id,
+            attribute_type=attribute_type
+        ).order_by('-updated_at').first()
+
 
 class DestinationAttribute(models.Model):
     """
