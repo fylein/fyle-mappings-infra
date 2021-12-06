@@ -2,7 +2,7 @@ import importlib
 from typing import List, Dict
 
 from django.db import models, transaction
-from django.contrib.postgres.fields import JSONField
+from django.db.models import JSONField
 
 from .exceptions import BulkError
 from .utils import assert_valid
