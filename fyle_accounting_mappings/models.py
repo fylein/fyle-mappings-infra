@@ -162,7 +162,7 @@ class ExpenseAttribute(models.Model):
 
         existing_attributes = ExpenseAttribute.objects.filter(
             value__in=attribute_value_list, attribute_type=attribute_type,
-            workspace_id=workspace_id).values('id', 'value', 'detail')
+            workspace_id=workspace_id).values('id', 'value', 'source_id', 'detail')
 
         existing_attribute_values = []
 
@@ -172,7 +172,8 @@ class ExpenseAttribute(models.Model):
             existing_attribute_values.append(existing_attribute['value'])
             primary_key_map[existing_attribute['value']] = {
                 'id': existing_attribute['id'],
-                'detail': existing_attribute['detail']
+                'detail': existing_attribute['detail'],
+                'source_id': existing_attribute['source_id']
             }
 
         attributes_to_be_created = []
@@ -193,19 +194,31 @@ class ExpenseAttribute(models.Model):
                     )
                 )
             else:
-                if update and 'detail' in attribute and \
-                        attribute['detail'] != primary_key_map[attribute['value']]['detail']:
+                if update and (\
+                    ('detail' in attribute and attribute['detail'] != primary_key_map[attribute['value']]['detail']) \
+                    or attribute['source_id'] != primary_key_map[attribute['value']]['source_id']):
+                    update_attribute = {
+                        'id': primary_key_map[attribute['value']]['id'],
+                        'detail': attribute['detail'] if 'detail' in attribute else None
+                    }
+
+                    if attribute['attribute_type'] == 'PROJECT':
+                        update_attribute['source_id'] = attribute['source_id']
+
                     attributes_to_be_updated.append(
-                        ExpenseAttribute(
-                            id=primary_key_map[attribute['value']]['id'],
-                            detail=attribute['detail'],
-                        )
+                        ExpenseAttribute(**update_attribute)
                     )
+
         if attributes_to_be_created:
             ExpenseAttribute.objects.bulk_create(attributes_to_be_created, batch_size=50)
 
         if attributes_to_be_updated:
-            ExpenseAttribute.objects.bulk_update(attributes_to_be_updated, fields=['detail'], batch_size=50)
+            columns_to_be_updated = ['detail']
+            if attribute_type == 'PROJECT':
+                columns_to_be_updated.append('source_id')
+            ExpenseAttribute.objects.bulk_update(
+                attributes_to_be_updated, fields=columns_to_be_updated, batch_size=50
+            )
 
     @staticmethod
     def get_last_synced_at(attribute_type: str, workspace_id: int):
