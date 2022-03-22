@@ -143,6 +143,9 @@ class SearchDestinationAttributesView(ListCreateAPIView):
 
     def get_queryset(self):
         destination_attribute_value = self.request.query_params.get('destination_attribute_value')
+
+        assert_valid(destination_attribute_value is not None, 'query param destination_attribute_value not found')
+
         destination_attributes = DestinationAttribute.objects.filter(
             value__icontains=destination_attribute_value, workspace_id=self.kwargs['workspace_id']
         ).all()
