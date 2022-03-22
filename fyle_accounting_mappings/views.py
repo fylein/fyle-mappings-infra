@@ -10,7 +10,7 @@ from .exceptions import BulkError
 from .utils import assert_valid
 from .models import MappingSetting, Mapping, ExpenseAttribute, DestinationAttribute, EmployeeMapping, CategoryMapping
 from .serializers import MappingSettingSerializer, MappingSerializer, \
-    EmployeeMappingSerializer, CategoryMappingSerializer
+    EmployeeMappingSerializer, CategoryMappingSerializer, DestinationAttributeSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -133,3 +133,17 @@ class CategoryMappingsView(ListCreateAPIView):
         return CategoryMapping.objects.filter(
             workspace_id=self.kwargs['workspace_id']
         ).all().order_by('source_category__value')
+
+
+class SearchDestinationAttributesView(ListCreateAPIView):
+    """
+    Search Destination Attributes View
+    """
+    serializer_class = DestinationAttributeSerializer
+
+    def get_queryset(self):
+        destination_attribute_value = self.request.query_params.get('destination_attribute_value')
+        destination_attributes = DestinationAttribute.objects.filter(
+            value__icontains=destination_attribute_value, workspace_id=self.kwargs['workspace_id']
+        ).all()
+        return destination_attributes
