@@ -154,3 +154,34 @@ class SearchDestinationAttributesView(ListCreateAPIView):
             workspace_id=self.kwargs['workspace_id']
         ).all()
         return destination_attributes
+
+
+class MappingStatsView(ListCreateAPIView):
+    """
+    Stats for total mapped and unmapped count for a given attribute type
+    """
+    def get(self, request, *args, **kwargs):
+        source_type = self.request.query_params.get('source_type')
+
+        assert_valid(source_type is not None, 'query param source_type not found')
+
+        total_attributes_count = ExpenseAttribute.objects.filter(
+            attribute_type=source_type, workspace_id=self.kwargs['workspace_id']
+        ).count()
+
+        if source_type == 'EMPLOYEE':
+            mapped_attributes_count = EmployeeMapping.objects.filter(
+                workspace_id=self.kwargs['workspace_id']
+            ).count()
+        else:
+            mapped_attributes_count = Mapping.objects.filter(
+                source_type=source_type, workspace_id=self.kwargs['workspace_id']
+            ).count()
+
+        return Response(
+            data={
+                'mapped_attributes_count': mapped_attributes_count,
+                'unmapped_attributes_count': total_attributes_count - mapped_attributes_count
+            },
+            status=status.HTTP_200_OK
+        )
