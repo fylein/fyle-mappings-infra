@@ -342,7 +342,10 @@ class MappingSetting(models.Model):
     destination_field = models.CharField(max_length=255, help_text='Destination mapping field')
     import_to_fyle = models.BooleanField(default=False, help_text='Import to Fyle or not')
     is_custom = models.BooleanField(default=False, help_text='Custom Field or not')
-    workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
+    workspace = models.ForeignKey(
+        Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model',
+        related_name='mapping_settings'
+    )
     created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
     updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
 

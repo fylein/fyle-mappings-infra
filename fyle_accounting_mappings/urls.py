@@ -15,11 +15,13 @@ Including another URLconf
 """
 from django.urls import path
 
-from .views import MappingSettingsView, MappingsView, EmployeeMappingsView, CategoryMappingsView
+from .views import MappingSettingsView, MappingsView, EmployeeMappingsView, CategoryMappingsView,\
+    SearchDestinationAttributesView
 
 urlpatterns = [
     path('settings/', MappingSettingsView.as_view()),
     path('employee/', EmployeeMappingsView.as_view()),
     path('category/', CategoryMappingsView.as_view()),
+    path('destination_attributes/search/', SearchDestinationAttributesView.as_view()),
     path('', MappingsView.as_view())
 ]
