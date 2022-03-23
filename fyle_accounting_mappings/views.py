@@ -142,11 +142,15 @@ class SearchDestinationAttributesView(ListCreateAPIView):
     serializer_class = DestinationAttributeSerializer
 
     def get_queryset(self):
+        destination_attribute_type = self.request.query_params.get('destination_attribute_type')
         destination_attribute_value = self.request.query_params.get('destination_attribute_value')
 
         assert_valid(destination_attribute_value is not None, 'query param destination_attribute_value not found')
+        assert_valid(destination_attribute_type is not None, 'query param destination_attribute_type not found')
 
         destination_attributes = DestinationAttribute.objects.filter(
-            value__icontains=destination_attribute_value, workspace_id=self.kwargs['workspace_id']
+            value__icontains=destination_attribute_value,
+            attribute_type=destination_attribute_type,
+            workspace_id=self.kwargs['workspace_id']
         ).all()
         return destination_attributes
