@@ -391,6 +391,7 @@ class Mapping(models.Model):
     updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
 
     class Meta:
+        unique_together = ('source_type', 'source', 'destination_type', 'workspace')
         db_table = 'mappings'
 
     @staticmethod

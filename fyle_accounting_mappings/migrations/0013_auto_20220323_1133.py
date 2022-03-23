@@ -16,9 +16,5 @@ class Migration(migrations.Migration):
             model_name='mappingsetting',
             name='workspace',
             field=models.ForeignKey(help_text='Reference to Workspace model', on_delete=django.db.models.deletion.PROTECT, related_name='mapping_settings', to='workspaces.workspace'),
-        ),
-        migrations.AlterUniqueTogether(
-            name='mapping',
-            unique_together=set(),
-        ),
+        )
     ]
