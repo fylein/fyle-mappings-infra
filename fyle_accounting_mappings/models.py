@@ -342,6 +342,7 @@ class MappingSetting(models.Model):
     destination_field = models.CharField(max_length=255, help_text='Destination mapping field')
     import_to_fyle = models.BooleanField(default=False, help_text='Import to Fyle or not')
     is_custom = models.BooleanField(default=False, help_text='Custom Field or not')
+    source_placeholder = models.TextField(help_text='placeholder of source field', null=True)
     workspace = models.ForeignKey(
         Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model',
         related_name='mapping_settings'
