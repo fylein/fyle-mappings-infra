@@ -52,6 +52,7 @@ class MappingsView(ListCreateAPIView):
 
     def get_queryset(self):
         source_type = self.request.query_params.get('source_type')
+        destination_type = self.request.query_params.get('destination_type')
 
         assert_valid(source_type is not None, 'query param source type not found')
 
@@ -60,7 +61,14 @@ class MappingsView(ListCreateAPIView):
                 source_type=source_type, workspace_id=self.kwargs['workspace_id']).values('source_id').annotate(
                     count=Count('source_id')).filter(count=2).values_list('source_id'))
         else:
-            mappings = Mapping.objects.filter(source_type=source_type, workspace_id=self.kwargs['workspace_id'])
+            params = {
+                'source_type': source_type,
+                'workspace_id': self.kwargs['workspace_id']
+            }
+            if destination_type:
+                params['destination_type'] = destination_type
+
+            mappings = Mapping.objects.filter(**params)
 
         return mappings.order_by('source__value')
 
