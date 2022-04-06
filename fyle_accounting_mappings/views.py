@@ -1,16 +1,18 @@
 import logging
+import operator
+from functools import reduce
 from typing import Dict, List
 
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.response import Response
 from rest_framework.views import status
-from django.db.models import Count
+from django.db.models import Count, Q
 
 from .exceptions import BulkError
 from .utils import assert_valid
 from .models import MappingSetting, Mapping, ExpenseAttribute, DestinationAttribute, EmployeeMapping, CategoryMapping
 from .serializers import MappingSettingSerializer, MappingSerializer, \
-    EmployeeMappingSerializer, CategoryMappingSerializer, DestinationAttributeSerializer
+    EmployeeMappingSerializer, CategoryMappingSerializer, DestinationAttributeSerializer, ExpenseAttributeSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -193,3 +195,56 @@ class MappingStatsView(ListCreateAPIView):
             },
             status=status.HTTP_200_OK
         )
+
+
+class MappingsFilterView(ListCreateAPIView):
+    """
+    GET Mappings with multiple filters
+    """
+    serializer_class = ExpenseAttributeSerializer
+
+    def get_queryset(self):
+        mapping_source_alphabets = self.request.query_params.get('mapping_source_alphabets')
+        attribute_type = self.request.query_params.get('attribute_type')
+        all_alphabets = self.request.query_params.get('all_alphabets')
+        mapping_state = self.request.query_params.get('mapping_state')
+
+        assert_valid(attribute_type is not None, 'query param attribute_type not found')
+        assert_valid(mapping_state is not None, 'query param mapping_state not found')
+
+        if all_alphabets == 'true':
+            mapping_source_alphabets = [
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U',
+                'V', 'W', 'X', 'Y', 'Z'
+            ]
+
+        source_ids = []
+
+        if mapping_state != 'ALL':
+            mapped_attributes = Mapping.objects.filter(
+                reduce(operator.or_, (Q(source__value__istartswith=x) for x in mapping_source_alphabets)),
+                workspace_id=self.kwargs['workspace_id'],
+                source_type=attribute_type
+            ).values()
+
+            for attribute in mapped_attributes:
+                source_ids.append(attribute['source_id'])
+
+        if mapping_state == 'MAPPED':
+            return ExpenseAttribute.objects.filter(
+                id__in=source_ids,
+                workspace_id=self.kwargs['workspace_id'],
+                attribute_type=attribute_type
+            )
+        elif mapping_state == 'UNMAPPED':
+            return ExpenseAttribute.objects.filter(
+                ~Q(id__in=source_ids),
+                reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)),
+                workspace_id=self.kwargs['workspace_id'],
+                attribute_type=attribute_type
+            )
+        else:
+            return ExpenseAttribute.objects.filter(
+                workspace_id=self.kwargs['workspace_id'],
+                attribute_type=attribute_type
+            )
