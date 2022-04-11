@@ -203,6 +203,12 @@ class MappingsFilterView(ListCreateAPIView):
     """
     serializer_class = ExpenseAttributeSerializer
 
+    def get_serializer_class(self):
+        if self.request.query_params['mapping_state'] == 'MAPPED':
+            return MappingSerializer
+        else:
+            return ExpenseAttributeSerializer
+
     def get_queryset(self):
         mapping_source_alphabets = self.request.query_params.get('mapping_source_alphabets')
         attribute_type = self.request.query_params.get('attribute_type')
