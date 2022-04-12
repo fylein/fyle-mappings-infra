@@ -1,15 +1,15 @@
 import logging
 from typing import Dict, List
 
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import status
-from django.db.models import Count
+from django.db.models import Count, Q
 
 from .exceptions import BulkError
 from .utils import assert_valid
 from .models import MappingSetting, Mapping, ExpenseAttribute, DestinationAttribute, EmployeeMapping, CategoryMapping
-from .serializers import MappingSettingSerializer, MappingSerializer, \
+from .serializers import ExpenseAttributeMappingSerializer, MappingSettingSerializer, MappingSerializer, \
     EmployeeMappingSerializer, CategoryMappingSerializer, DestinationAttributeSerializer
 
 logger = logging.getLogger(__name__)
@@ -193,3 +193,35 @@ class MappingStatsView(ListCreateAPIView):
             },
             status=status.HTTP_200_OK
         )
+
+class ExpenseAttributesMappingView(ListAPIView):
+    """
+    Expense Attributes Mapping View
+    """
+    serializer_class = ExpenseAttributeMappingSerializer
+
+    def get_queryset(self):
+        source_type = self.request.query_params.get('source_type')
+        destination_type = self.request.query_params.get('destination_type')
+        mapped = self.request.query_params.get('mapped')
+
+        assert_valid(source_type is not None, 'query param source_type not found')
+        assert_valid(destination_type is not None, 'query param source_type not found')
+
+        if mapped.lower() == 'false':
+            mapped = False
+        elif mapped.lower() == 'true':
+            mapped = True
+        else:
+            mapped = None
+        
+        if mapped:
+            param = Q(mappings__destination_type=destination_type)
+        elif mapped is False:
+            param = ~Q(mappings__destination_type=destination_type)
+        else:
+            param = None
+        return ExpenseAttribute.objects.filter(
+            param,
+            workspace_id=self.kwargs['workspace_id'], attribute_type=source_type,
+        ).all()

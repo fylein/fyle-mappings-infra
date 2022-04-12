@@ -385,7 +385,7 @@ class Mapping(models.Model):
     id = models.AutoField(primary_key=True)
     source_type = models.CharField(max_length=255, help_text='Fyle Enum')
     destination_type = models.CharField(max_length=255, help_text='Destination Enum')
-    source = models.ForeignKey(ExpenseAttribute, on_delete=models.PROTECT)
+    source = models.ForeignKey(ExpenseAttribute, on_delete=models.PROTECT, related_name='mappings')
     destination = models.ForeignKey(DestinationAttribute, on_delete=models.PROTECT)
     workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
     created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
@@ -558,7 +558,8 @@ class EmployeeMapping(models.Model):
     Employee Mappings
     """
     id = models.AutoField(primary_key=True)
-    source_employee = models.OneToOneField(ExpenseAttribute, on_delete=models.PROTECT)
+    source_employee = models.OneToOneField(
+        ExpenseAttribute, on_delete=models.PROTECT, related_name='employee_mapping')
     destination_employee = models.ForeignKey(
         DestinationAttribute, on_delete=models.PROTECT, null=True, related_name='destination_employee')
     destination_vendor = models.ForeignKey(

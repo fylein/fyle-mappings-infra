@@ -1,6 +1,7 @@
 """
 Mapping Serializers
 """
+from pytest import param
 from rest_framework import serializers
 from django.db.models.query import Q
 from .models import ExpenseAttribute, DestinationAttribute, Mapping, MappingSetting, EmployeeMapping, CategoryMapping
@@ -204,3 +205,37 @@ class CategoryMappingSerializer(serializers.ModelSerializer):
         )
 
         return category_mapping
+
+class MappingFilteredListSerializer(serializers.ListSerializer):
+    """
+    Serializer to filter the active system, which is a boolen field in
+    System Model. The value argument to to_representation() method is
+    the model instance
+    """
+
+    def to_representation(self, data):
+        params = self.context.get('request').query_params
+        destination_type = params.get('destination_type')
+        data = data.filter(destination_type=destination_type)
+        return super(MappingFilteredListSerializer, self).to_representation(data)
+
+class MappingSerializerV2(serializers.ModelSerializer):
+    """
+    Mapping serializer
+    """
+    destination = DestinationAttributeSerializer()
+
+    class Meta:
+        model = Mapping
+        list_serializer_class = MappingFilteredListSerializer
+        fields = ('destination', 'source_type', 'destination_type', 'created_at', 'updated_at')
+
+class ExpenseAttributeMappingSerializer(serializers.ModelSerializer):
+    """
+    Mapping serializer
+    """
+    mappings = MappingSerializerV2(many=True)
+
+    class Meta:
+        model = ExpenseAttribute
+        fields = '__all__'
