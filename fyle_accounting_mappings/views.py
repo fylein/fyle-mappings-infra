@@ -208,9 +208,9 @@ class ExpenseAttributesMappingView(ListAPIView):
         assert_valid(source_type is not None, 'query param source_type not found')
         assert_valid(destination_type is not None, 'query param source_type not found')
 
-        if mapped.lower() == 'false':
+        if mapped and mapped.lower() == 'false':
             mapped = False
-        elif mapped.lower() == 'true':
+        elif mapped and mapped.lower() == 'true':
             mapped = True
         else:
             mapped = None
@@ -220,7 +220,10 @@ class ExpenseAttributesMappingView(ListAPIView):
         elif mapped is False:
             param = ~Q(mappings__destination_type=destination_type)
         else:
-            param = None
+            return ExpenseAttribute.objects.filter(
+                workspace_id=self.kwargs['workspace_id'], attribute_type=source_type,
+            ).all()
+
         return ExpenseAttribute.objects.filter(
             param,
             workspace_id=self.kwargs['workspace_id'], attribute_type=source_type,
