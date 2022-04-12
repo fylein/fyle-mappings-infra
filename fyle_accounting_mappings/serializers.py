@@ -1,7 +1,6 @@
 """
 Mapping Serializers
 """
-from pytest import param
 from rest_framework import serializers
 from django.db.models.query import Q
 from .models import ExpenseAttribute, DestinationAttribute, Mapping, MappingSetting, EmployeeMapping, CategoryMapping
