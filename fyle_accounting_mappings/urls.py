@@ -25,5 +25,5 @@ urlpatterns = [
     path('destination_attributes/search/', SearchDestinationAttributesView.as_view()),
     path('stats/', MappingStatsView.as_view()),
     path('', MappingsView.as_view()),
-    path('expense_attributes/mappings/', ExpenseAttributesMappingView.as_view())
+    path('expense_attributes/', ExpenseAttributesMappingView.as_view())
 ]
