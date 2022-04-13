@@ -251,12 +251,9 @@ class EmployeeAttributesMappingView(ListAPIView):
     serializer_class = EmployeeAttributeMappingSerializer
 
     def get_queryset(self):
-        source_type = self.request.query_params.get('source_type')
         mapped = self.request.query_params.get('mapped')
         all_alphabets = self.request.query_params.get('all_alphabets')
         mapping_source_alphabets = self.request.query_params.get('mapping_source_alphabets')
-
-        assert_valid(source_type is not None, 'query param source_type not found')
 
         if all_alphabets == 'true':
             mapping_source_alphabets = [
@@ -282,11 +279,11 @@ class EmployeeAttributesMappingView(ListAPIView):
         else:
             return ExpenseAttribute.objects.filter(
                 reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)),
-                workspace_id=self.kwargs['workspace_id'], attribute_type=source_type,
+                workspace_id=self.kwargs['workspace_id'], attribute_type='EMPLOYEE'
             ).order_by('value').all()
 
         return ExpenseAttribute.objects.filter(
             param,
             reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)),
-            workspace_id=self.kwargs['workspace_id'], attribute_type=source_type,
+            workspace_id=self.kwargs['workspace_id'], attribute_type='EMPLOYEE',
         ).order_by('value').all()
