@@ -1,15 +1,17 @@
 import logging
+import operator
+from functools import reduce
 from typing import Dict, List
 
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import status
-from django.db.models import Count
+from django.db.models import Count, Q
 
 from .exceptions import BulkError
 from .utils import assert_valid
 from .models import MappingSetting, Mapping, ExpenseAttribute, DestinationAttribute, EmployeeMapping, CategoryMapping
-from .serializers import MappingSettingSerializer, MappingSerializer, \
+from .serializers import ExpenseAttributeMappingSerializer, MappingSettingSerializer, MappingSerializer, \
     EmployeeMappingSerializer, CategoryMappingSerializer, DestinationAttributeSerializer
 
 logger = logging.getLogger(__name__)
@@ -188,8 +190,54 @@ class MappingStatsView(ListCreateAPIView):
 
         return Response(
             data={
-                'mapped_attributes_count': mapped_attributes_count,
+                'all_attributes_count': total_attributes_count,
                 'unmapped_attributes_count': total_attributes_count - mapped_attributes_count
             },
             status=status.HTTP_200_OK
         )
+
+
+class ExpenseAttributesMappingView(ListAPIView):
+    """
+    Expense Attributes Mapping View
+    """
+    serializer_class = ExpenseAttributeMappingSerializer
+
+    def get_queryset(self):
+        source_type = self.request.query_params.get('source_type')
+        destination_type = self.request.query_params.get('destination_type')
+        mapped = self.request.query_params.get('mapped')
+        all_alphabets = self.request.query_params.get('all_alphabets')
+        mapping_source_alphabets = self.request.query_params.get('mapping_source_alphabets')
+
+        assert_valid(source_type is not None, 'query param source_type not found')
+        assert_valid(destination_type is not None, 'query param source_type not found')
+
+        if all_alphabets == 'true':
+            mapping_source_alphabets = [
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U',
+                'V', 'W', 'X', 'Y', 'Z'
+            ]
+
+        if mapped and mapped.lower() == 'false':
+            mapped = False
+        elif mapped and mapped.lower() == 'true':
+            mapped = True
+        else:
+            mapped = None
+
+        if mapped:
+            param = Q(mappings__destination_type=destination_type)
+        elif mapped is False:
+            param = ~Q(mappings__destination_type=destination_type)
+        else:
+            return ExpenseAttribute.objects.filter(
+                reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)),
+                workspace_id=self.kwargs['workspace_id'], attribute_type=source_type,
+            ).order_by('value').all()
+
+        return ExpenseAttribute.objects.filter(
+            reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)),
+            param,
+            workspace_id=self.kwargs['workspace_id'], attribute_type=source_type,
+        ).order_by('value').all()
