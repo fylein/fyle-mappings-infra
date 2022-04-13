@@ -234,10 +234,10 @@ class ExpenseAttributesMappingView(ListAPIView):
             return ExpenseAttribute.objects.filter(
                 reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)),
                 workspace_id=self.kwargs['workspace_id'], attribute_type=source_type,
-            ).all()
+            ).order_by('value').all()
 
         return ExpenseAttribute.objects.filter(
             reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)),
             param,
             workspace_id=self.kwargs['workspace_id'], attribute_type=source_type,
-        ).all()
+        ).order_by('value').all()
