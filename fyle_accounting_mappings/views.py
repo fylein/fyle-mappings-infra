@@ -190,7 +190,7 @@ class MappingStatsView(ListCreateAPIView):
 
         return Response(
             data={
-                'mapped_attributes_count': mapped_attributes_count,
+                'all_attributes_count': total_attributes_count,
                 'unmapped_attributes_count': total_attributes_count - mapped_attributes_count
             },
             status=status.HTTP_200_OK
