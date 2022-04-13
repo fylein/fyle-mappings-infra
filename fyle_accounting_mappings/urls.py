@@ -16,7 +16,7 @@ Including another URLconf
 from django.urls import path
 
 from .views import MappingSettingsView, MappingsView, EmployeeMappingsView, CategoryMappingsView,\
-    SearchDestinationAttributesView, MappingStatsView, ExpenseAttributesMappingView
+    SearchDestinationAttributesView, MappingStatsView, ExpenseAttributesMappingView, EmployeeAttributesMappingView
 
 urlpatterns = [
     path('settings/', MappingSettingsView.as_view()),
@@ -25,5 +25,6 @@ urlpatterns = [
     path('destination_attributes/search/', SearchDestinationAttributesView.as_view()),
     path('stats/', MappingStatsView.as_view()),
     path('', MappingsView.as_view()),
-    path('expense_attributes/', ExpenseAttributesMappingView.as_view())
+    path('expense_attributes/', ExpenseAttributesMappingView.as_view()),
+    path('employee_attributes/', EmployeeAttributesMappingView.as_view())
 ]

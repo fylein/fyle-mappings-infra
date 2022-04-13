@@ -12,7 +12,8 @@ from .exceptions import BulkError
 from .utils import assert_valid
 from .models import MappingSetting, Mapping, ExpenseAttribute, DestinationAttribute, EmployeeMapping, CategoryMapping
 from .serializers import ExpenseAttributeMappingSerializer, MappingSettingSerializer, MappingSerializer, \
-    EmployeeMappingSerializer, CategoryMappingSerializer, DestinationAttributeSerializer
+    EmployeeMappingSerializer, CategoryMappingSerializer, DestinationAttributeSerializer, \
+    EmployeeAttributeMappingSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -239,5 +240,53 @@ class ExpenseAttributesMappingView(ListAPIView):
         return ExpenseAttribute.objects.filter(
             reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)),
             param,
+            workspace_id=self.kwargs['workspace_id'], attribute_type=source_type,
+        ).order_by('value').all()
+
+
+class EmployeeAttributesMappingView(ListAPIView):
+    """
+    Expense Attributes Mapping View
+    """
+    serializer_class = EmployeeAttributeMappingSerializer
+
+    def get_queryset(self):
+        source_type = self.request.query_params.get('source_type')
+        mapped = self.request.query_params.get('mapped')
+        all_alphabets = self.request.query_params.get('all_alphabets')
+        mapping_source_alphabets = self.request.query_params.get('mapping_source_alphabets')
+
+        assert_valid(source_type is not None, 'query param source_type not found')
+
+        if all_alphabets == 'true':
+            mapping_source_alphabets = [
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U',
+                'V', 'W', 'X', 'Y', 'Z'
+            ]
+
+        if mapped and mapped.lower() == 'false':
+            mapped = False
+        elif mapped and mapped.lower() == 'true':
+            mapped = True
+        else:
+            mapped = None
+
+        source_employees = EmployeeMapping.objects.filter(
+            workspace_id=self.kwargs['workspace_id']
+        ).values_list('source_employee_id', flat=True)
+
+        if mapped:
+            param = Q(employee_mapping__source_employee_id__in=source_employees)
+        elif mapped is False:
+            param = ~Q(employee_mapping__source_employee_id__in=source_employees)
+        else:
+            return ExpenseAttribute.objects.filter(
+                reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)),
+                workspace_id=self.kwargs['workspace_id'], attribute_type=source_type,
+            ).order_by('value').all()
+
+        return ExpenseAttribute.objects.filter(
+            param,
+            reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)),
             workspace_id=self.kwargs['workspace_id'], attribute_type=source_type,
         ).order_by('value').all()
