@@ -261,12 +261,11 @@ class EmployeeMappingSerializerV2(serializers.ModelSerializer):
     source_employee = ExpenseAttributeSerializer(required=True)
     destination_employee = DestinationAttributeSerializer(allow_null=True)
     destination_vendor = DestinationAttributeSerializer(allow_null=True)
-    destination_card_account = DestinationAttributeSerializer(allow_null=True)
 
     class Meta:
         model = EmployeeMapping
         list_serializer_class = EmployeeMappingFilteredListSerializer
-        fields = '__all__'
+        fields = ('source_employee', 'destination_employee', 'destination_vendor', 'created_at', 'updated_at')
 
 
 class EmployeeAttributeMappingSerializer(serializers.ModelSerializer):
