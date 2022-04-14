@@ -62,6 +62,7 @@ confidence=
 # --disable=W".
 disable=print-statement,
         W0223,
+        W0235,
         parameter-unpacking,
         unpacking-in-except,
         old-raise-syntax,

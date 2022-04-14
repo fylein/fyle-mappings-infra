@@ -205,6 +205,7 @@ class CategoryMappingSerializer(serializers.ModelSerializer):
 
         return category_mapping
 
+
 class MappingFilteredListSerializer(serializers.ListSerializer):
     """
     Serializer to filter the active system, which is a boolen field in
@@ -218,6 +219,7 @@ class MappingFilteredListSerializer(serializers.ListSerializer):
         data = data.filter(destination_type=destination_type)
         return super(MappingFilteredListSerializer, self).to_representation(data)
 
+
 class MappingSerializerV2(serializers.ModelSerializer):
     """
     Mapping serializer
@@ -229,11 +231,48 @@ class MappingSerializerV2(serializers.ModelSerializer):
         list_serializer_class = MappingFilteredListSerializer
         fields = ('destination', 'source_type', 'destination_type', 'created_at', 'updated_at')
 
+
 class ExpenseAttributeMappingSerializer(serializers.ModelSerializer):
     """
     Mapping serializer
     """
     mappings = MappingSerializerV2(many=True)
+
+    class Meta:
+        model = ExpenseAttribute
+        fields = '__all__'
+
+
+class EmployeeMappingFilteredListSerializer(serializers.ListSerializer):
+    """
+    Serializer to filter the active system, which is a boolen field in
+    System Model. The value argument to to_representation() method is
+    the model instance
+    """
+
+    def to_representation(self, data):
+        return super(EmployeeMappingFilteredListSerializer, self).to_representation(data)
+
+
+class EmployeeMappingSerializerV2(serializers.ModelSerializer):
+    """
+    Employee Mapping V2 serializer
+    """
+    source_employee = ExpenseAttributeSerializer(required=True)
+    destination_employee = DestinationAttributeSerializer(allow_null=True)
+    destination_vendor = DestinationAttributeSerializer(allow_null=True)
+
+    class Meta:
+        model = EmployeeMapping
+        list_serializer_class = EmployeeMappingFilteredListSerializer
+        fields = ('source_employee', 'destination_employee', 'destination_vendor', 'created_at', 'updated_at')
+
+
+class EmployeeAttributeMappingSerializer(serializers.ModelSerializer):
+    """
+    Employee Attributes Mapping serializer
+    """
+    employee_mapping = EmployeeMappingSerializerV2(many=True)
 
     class Meta:
         model = ExpenseAttribute
