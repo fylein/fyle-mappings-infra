@@ -559,7 +559,7 @@ class EmployeeMapping(models.Model):
     """
     id = models.AutoField(primary_key=True)
     source_employee = models.ForeignKey(
-        ExpenseAttribute, on_delete=models.PROTECT, related_name='employee_mapping')
+        ExpenseAttribute, on_delete=models.PROTECT, related_name='employeemapping')
     destination_employee = models.ForeignKey(
         DestinationAttribute, on_delete=models.PROTECT, null=True, related_name='destination_employee')
     destination_vendor = models.ForeignKey(
