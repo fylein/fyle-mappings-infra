@@ -236,7 +236,7 @@ class ExpenseAttributeMappingSerializer(serializers.ModelSerializer):
     """
     Mapping serializer
     """
-    mappings = MappingSerializerV2(many=True)
+    mapping = MappingSerializerV2(many=True)
 
     class Meta:
         model = ExpenseAttribute
@@ -272,7 +272,7 @@ class EmployeeAttributeMappingSerializer(serializers.ModelSerializer):
     """
     Employee Attributes Mapping serializer
     """
-    employee_mapping = EmployeeMappingSerializerV2(many=True)
+    employeemapping = EmployeeMappingSerializerV2(many=True)
 
     class Meta:
         model = ExpenseAttribute
