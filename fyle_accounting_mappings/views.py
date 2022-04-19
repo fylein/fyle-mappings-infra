@@ -228,9 +228,9 @@ class ExpenseAttributesMappingView(ListAPIView):
             mapped = None
 
         if mapped:
-            param = Q(mappings__destination_type=destination_type)
+            param = Q(mapping__destination_type=destination_type)
         elif mapped is False:
-            param = ~Q(mappings__destination_type=destination_type)
+            param = ~Q(mapping__destination_type=destination_type)
         else:
             return ExpenseAttribute.objects.filter(
                 reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)),
@@ -273,9 +273,9 @@ class EmployeeAttributesMappingView(ListAPIView):
         ).values_list('source_employee_id', flat=True)
 
         if mapped:
-            param = Q(employee_mapping__source_employee_id__in=source_employees)
+            param = Q(employeemapping__source_employee_id__in=source_employees)
         elif mapped is False:
-            param = ~Q(employee_mapping__source_employee_id__in=source_employees)
+            param = ~Q(employeemapping__source_employee_id__in=source_employees)
         else:
             return ExpenseAttribute.objects.filter(
                 reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)),
