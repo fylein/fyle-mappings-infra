@@ -173,20 +173,29 @@ class MappingStatsView(ListCreateAPIView):
     """
     def get(self, request, *args, **kwargs):
         source_type = self.request.query_params.get('source_type')
+        destination_type = self.request.query_params.get('destination_type')
 
         assert_valid(source_type is not None, 'query param source_type not found')
+        assert_valid(destination_type is not None, 'query param destination_type not found')
 
         total_attributes_count = ExpenseAttribute.objects.filter(
             attribute_type=source_type, workspace_id=self.kwargs['workspace_id']
         ).count()
 
         if source_type == 'EMPLOYEE':
+            filters = {}
+
+            if destination_type == 'VENDOR':
+                filters['destination_vendor__attribute_type'] = destination_type
+            else:
+                filters['destination_employee__attribute_type'] = destination_type
+
             mapped_attributes_count = EmployeeMapping.objects.filter(
-                workspace_id=self.kwargs['workspace_id']
+                **filters, workspace_id=self.kwargs['workspace_id']
             ).count()
         else:
             mapped_attributes_count = Mapping.objects.filter(
-                source_type=source_type, workspace_id=self.kwargs['workspace_id']
+                source_type=source_type, destination_type=destination_type, workspace_id=self.kwargs['workspace_id']
             ).count()
 
         return Response(
