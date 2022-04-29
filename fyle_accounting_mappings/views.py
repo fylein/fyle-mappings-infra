@@ -263,6 +263,7 @@ class EmployeeAttributesMappingView(ListAPIView):
         mapped = self.request.query_params.get('mapped')
         all_alphabets = self.request.query_params.get('all_alphabets')
         mapping_source_alphabets = self.request.query_params.get('mapping_source_alphabets')
+        destination_type = self.request.query_params.get('destination_type', None)
 
         if all_alphabets == 'true':
             mapping_source_alphabets = [
@@ -277,8 +278,16 @@ class EmployeeAttributesMappingView(ListAPIView):
         else:
             mapped = None
 
+        filters = {}
+
+        if destination_type == 'VENDOR':
+            filters['destination_vendor__attribute_type'] = destination_type
+        else:
+            filters['destination_employee__attribute_type'] = destination_type
+
         source_employees = EmployeeMapping.objects.filter(
-            workspace_id=self.kwargs['workspace_id']
+            **filters,
+            workspace_id=self.kwargs['workspace_id'],
         ).values_list('source_employee_id', flat=True)
 
         if mapped:
