@@ -326,7 +326,7 @@ class DestinationAttribute(models.Model):
                             ('detail' in attribute and
                              attribute['detail'] != primary_key_map[attribute['destination_id']]['detail'])or\
                             ('active' in attribute and 
-                            attribute['active'] != primary_key_map[attribute['destination_id']]['active']):
+                             attribute['active'] != primary_key_map[attribute['destination_id']]['active']):
                         attributes_to_be_updated.append(
                             DestinationAttribute(
                                 id=primary_key_map[attribute['destination_id']]['id'],
