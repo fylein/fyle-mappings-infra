@@ -332,7 +332,7 @@ class DestinationAttribute(models.Model):
                                 id=primary_key_map[attribute['destination_id']]['id'],
                                 value=attribute['value'],
                                 detail=attribute['detail'] if 'detail' in attribute else None,
-                                 active=attribute['active'] if 'active' in attribute else None
+                                active=attribute['active'] if 'active' in attribute else None
                             )
                         )
         if attributes_to_be_created:
