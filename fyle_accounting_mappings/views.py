@@ -56,6 +56,7 @@ class MappingsView(ListCreateAPIView):
     def get_queryset(self):
         source_type = self.request.query_params.get('source_type')
         destination_type = self.request.query_params.get('destination_type')
+        source_active = self.request.query_params.get('source_active')
 
         assert_valid(source_type is not None, 'query param source type not found')
 
@@ -70,6 +71,9 @@ class MappingsView(ListCreateAPIView):
             }
             if destination_type:
                 params['destination_type'] = destination_type
+            
+            if source_active and source_active == 'true':
+                params['source__active'] = True
 
             mappings = Mapping.objects.filter(**params)
 
