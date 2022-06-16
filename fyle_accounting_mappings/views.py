@@ -71,7 +71,7 @@ class MappingsView(ListCreateAPIView):
             }
             if destination_type:
                 params['destination_type'] = destination_type
-            
+
             if source_active and source_active == 'true':
                 params['source__active'] = True
 

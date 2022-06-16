@@ -196,10 +196,10 @@ class ExpenseAttribute(models.Model):
                 )
             else:
                 if update and (
-                    ('detail' in attribute and attribute['detail'] != primary_key_map[attribute['value']]['detail']) 
-                    or 
-                    ('active' in attribute and attribute['active'] != primary_key_map[attribute['value']]['active'])
-                ):
+                        ('detail' in attribute and attribute['detail'] != primary_key_map[attribute['value']]['detail'])
+                        or
+                        ('active' in attribute and attribute['active'] != primary_key_map[attribute['value']]['active'])
+                    ):
                     attributes_to_be_updated.append(
                         ExpenseAttribute(
                             id=primary_key_map[attribute['value']]['id'],
@@ -321,14 +321,14 @@ class DestinationAttribute(models.Model):
                         active=attribute['active'] if 'active' in attribute else None
                     )
                 )
-            else:   
-                if update and (
-                    (attribute['value'] != primary_key_map[attribute['destination_id']]['value']) 
-                    or
-                    ('detail' in attribute and attribute['detail'] != primary_key_map[attribute['destination_id']]['detail'])
-                    or
-                    ('active' in attribute and attribute['active'] != primary_key_map[attribute['destination_id']]['active'])
-                ):
+            else:
+                if update and(
+                        (attribute['value'] != primary_key_map[attribute['destination_id']]['value'])
+                        or
+                        ('detail' in attribute and attribute['detail'] != primary_key_map[attribute['destination_id']]['detail'])
+                        or
+                        ('active' in attribute and attribute['active'] != primary_key_map[attribute['destination_id']]['active'])
+                    ):
                     attributes_to_be_updated.append(
                         DestinationAttribute(
                             id=primary_key_map[attribute['destination_id']]['id'],
