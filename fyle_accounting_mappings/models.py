@@ -162,7 +162,7 @@ class ExpenseAttribute(models.Model):
 
         existing_attributes = ExpenseAttribute.objects.filter(
             value__in=attribute_value_list, attribute_type=attribute_type,
-            workspace_id=workspace_id).values('id', 'value', 'detail')
+            workspace_id=workspace_id).values('id', 'value', 'detail', 'active')
 
         existing_attribute_values = []
 
@@ -172,7 +172,8 @@ class ExpenseAttribute(models.Model):
             existing_attribute_values.append(existing_attribute['value'])
             primary_key_map[existing_attribute['value']] = {
                 'id': existing_attribute['id'],
-                'detail': existing_attribute['detail']
+                'detail': existing_attribute['detail'],
+                'active': existing_attribute['active']
             }
 
         attributes_to_be_created = []
@@ -189,23 +190,28 @@ class ExpenseAttribute(models.Model):
                         value=attribute['value'],
                         source_id=attribute['source_id'],
                         detail=attribute['detail'] if 'detail' in attribute else None,
-                        workspace_id=workspace_id
+                        workspace_id=workspace_id,
+                        active=attribute['active'] if 'active' in attribute else None
                     )
                 )
             else:
-                if update and 'detail' in attribute and \
-                        attribute['detail'] != primary_key_map[attribute['value']]['detail']:
+                if update and (
+                        ('detail' in attribute and attribute['detail'] != primary_key_map[attribute['value']]['detail'])
+                        or
+                        ('active' in attribute and attribute['active'] != primary_key_map[attribute['value']]['active'])
+                    ):
                     attributes_to_be_updated.append(
                         ExpenseAttribute(
                             id=primary_key_map[attribute['value']]['id'],
-                            detail=attribute['detail'],
+                            detail=attribute['detail'] if 'detail' in attribute else None,
+                            active=attribute['active'] if 'active' in attribute else None
                         )
                     )
         if attributes_to_be_created:
             ExpenseAttribute.objects.bulk_create(attributes_to_be_created, batch_size=50)
 
         if attributes_to_be_updated:
-            ExpenseAttribute.objects.bulk_update(attributes_to_be_updated, fields=['detail'], batch_size=50)
+            ExpenseAttribute.objects.bulk_update(attributes_to_be_updated, fields=['detail', 'active'], batch_size=50)
 
     @staticmethod
     def get_last_synced_at(attribute_type: str, workspace_id: int):
@@ -281,7 +287,7 @@ class DestinationAttribute(models.Model):
 
         existing_attributes = DestinationAttribute.objects.filter(
             destination_id__in=attribute_destination_id_list, attribute_type=attribute_type,
-            workspace_id=workspace_id).values('id', 'value', 'destination_id', 'detail')
+            workspace_id=workspace_id).values('id', 'value', 'destination_id', 'detail', 'active')
 
         existing_attribute_destination_ids = []
 
@@ -292,7 +298,8 @@ class DestinationAttribute(models.Model):
             primary_key_map[existing_attribute['destination_id']] = {
                 'id': existing_attribute['id'],
                 'value': existing_attribute['value'],
-                'detail': existing_attribute['detail']
+                'detail': existing_attribute['detail'],
+                'active' : existing_attribute['active']
             }
 
         attributes_to_be_created = []
@@ -310,27 +317,32 @@ class DestinationAttribute(models.Model):
                         value=attribute['value'],
                         destination_id=attribute['destination_id'],
                         detail=attribute['detail'] if 'detail' in attribute else None,
-                        workspace_id=workspace_id
+                        workspace_id=workspace_id,
+                        active=attribute['active'] if 'active' in attribute else None
                     )
                 )
             else:
-                if update:
-                    if (attribute['value'] != primary_key_map[attribute['destination_id']]['value']) or \
-                            ('detail' in attribute and
-                             attribute['detail'] != primary_key_map[attribute['destination_id']]['detail']):
-                        attributes_to_be_updated.append(
-                            DestinationAttribute(
-                                id=primary_key_map[attribute['destination_id']]['id'],
-                                value=attribute['value'],
-                                detail=attribute['detail'] if 'detail' in attribute else None,
-                            )
+                if update and(
+                        (attribute['value'] != primary_key_map[attribute['destination_id']]['value'])
+                        or
+                        ('detail' in attribute and attribute['detail'] != primary_key_map[attribute['destination_id']]['detail'])
+                        or
+                        ('active' in attribute and attribute['active'] != primary_key_map[attribute['destination_id']]['active'])
+                    ):
+                    attributes_to_be_updated.append(
+                        DestinationAttribute(
+                            id=primary_key_map[attribute['destination_id']]['id'],
+                            value=attribute['value'],
+                            detail=attribute['detail'] if 'detail' in attribute else None,
+                            active=attribute['active'] if 'active' in attribute else None
                         )
+                    )
         if attributes_to_be_created:
             DestinationAttribute.objects.bulk_create(attributes_to_be_created, batch_size=50)
 
         if attributes_to_be_updated:
             DestinationAttribute.objects.bulk_update(
-                attributes_to_be_updated, fields=['detail', 'value'], batch_size=50)
+                attributes_to_be_updated, fields=['detail', 'value', 'active'], batch_size=50)
 
 
 class MappingSetting(models.Model):

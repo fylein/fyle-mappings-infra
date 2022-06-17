@@ -339,7 +339,7 @@ indent-after-paren=4
 indent-string='    '
 
 # Maximum number of characters on a single line.
-max-line-length=120
+max-line-length=130
 
 # Maximum number of lines in a module.
 max-module-lines=1000
@@ -556,7 +556,7 @@ max-args=5
 max-attributes=7
 
 # Maximum number of boolean expressions in an if statement.
-max-bool-expr=5
+max-bool-expr=6
 
 # Maximum number of branch for function / method body.
 max-branches=12
