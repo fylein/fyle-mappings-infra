@@ -20,6 +20,7 @@ from .views import MappingSettingsView, MappingsView, EmployeeMappingsView, Cate
 
 urlpatterns = [
     path('settings/', MappingSettingsView.as_view()),
+    path('settings/<int:pk>/', MappingSettingsView.as_view()),
     path('employee/', EmployeeMappingsView.as_view()),
     path('category/', CategoryMappingsView.as_view()),
     path('destination_attributes/search/', SearchDestinationAttributesView.as_view()),
