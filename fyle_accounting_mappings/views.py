@@ -3,7 +3,7 @@ import operator
 from functools import reduce
 from typing import Dict, List
 
-from rest_framework.generics import ListCreateAPIView, ListAPIView
+from rest_framework.generics import ListCreateAPIView, ListAPIView, DestroyAPIView
 from rest_framework.response import Response
 from rest_framework.views import status
 from django.db.models import Count, Q
@@ -18,7 +18,7 @@ from .serializers import ExpenseAttributeMappingSerializer, MappingSettingSerial
 logger = logging.getLogger(__name__)
 
 
-class MappingSettingsView(ListCreateAPIView):
+class MappingSettingsView(ListCreateAPIView, DestroyAPIView):
     """
     Mapping Settings VIew
     """
