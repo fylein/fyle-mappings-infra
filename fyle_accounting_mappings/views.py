@@ -25,7 +25,7 @@ class MappingSettingsView(ListCreateAPIView, DestroyAPIView):
     serializer_class = MappingSettingSerializer
 
     def get_queryset(self):
-        return MappingSetting.objects.filter(workspace_id=self.kwargs['workspace_id'])
+        return MappingSetting.objects.filter(workspace_id=self.kwargs['workspace_id']).order_by('updated_at')
 
     def post(self, request, *args, **kwargs):
         """
