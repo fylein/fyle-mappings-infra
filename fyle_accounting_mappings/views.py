@@ -257,7 +257,7 @@ class ExpenseAttributesMappingView(ListAPIView):
             mapped = None
 
         filters = {
-            'workspace_id' : self.kwargs['workspace_id'], 
+            'workspace_id' : self.kwargs['workspace_id'],
             'attribute_type': source_type,
         }
 
