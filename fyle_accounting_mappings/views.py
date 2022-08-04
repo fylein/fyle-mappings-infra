@@ -178,12 +178,20 @@ class MappingStatsView(ListCreateAPIView):
     def get(self, request, *args, **kwargs):
         source_type = self.request.query_params.get('source_type')
         destination_type = self.request.query_params.get('destination_type')
+        active = self.request.query_params.get('active')
 
         assert_valid(source_type is not None, 'query param source_type not found')
         assert_valid(destination_type is not None, 'query param destination_type not found')
 
+        filters = {}
+
+        if active and active.lower() == 'true':
+            filters['active'] = True
+        elif active and active.lower() == 'false':
+            filters['active'] = False
+
         total_attributes_count = ExpenseAttribute.objects.filter(
-            attribute_type=source_type, workspace_id=self.kwargs['workspace_id']
+            attribute_type=source_type, workspace_id=self.kwargs['workspace_id'], **filters
         ).count()
 
         if source_type == 'EMPLOYEE':
@@ -198,8 +206,15 @@ class MappingStatsView(ListCreateAPIView):
                 **filters, workspace_id=self.kwargs['workspace_id']
             ).count()
         else:
+            filters = {}
+
+            if active and active.lower() == 'true':
+                filters['source__active'] = True
+            elif active and active.lower() == 'false':
+                filters['source__active'] = False
+
             mapped_attributes_count = Mapping.objects.filter(
-                source_type=source_type, destination_type=destination_type, workspace_id=self.kwargs['workspace_id']
+                source_type=source_type, destination_type=destination_type, workspace_id=self.kwargs['workspace_id'], **filters
             ).count()
 
         return Response(
@@ -223,6 +238,7 @@ class ExpenseAttributesMappingView(ListAPIView):
         mapped = self.request.query_params.get('mapped')
         all_alphabets = self.request.query_params.get('all_alphabets')
         mapping_source_alphabets = self.request.query_params.get('mapping_source_alphabets')
+        active = self.request.query_params.get('active')
 
         assert_valid(source_type is not None, 'query param source_type not found')
         assert_valid(destination_type is not None, 'query param source_type not found')
@@ -240,6 +256,16 @@ class ExpenseAttributesMappingView(ListAPIView):
         else:
             mapped = None
 
+        filters = {
+            'workspace_id' : self.kwargs['workspace_id'], 
+            'attribute_type': source_type,
+        }
+
+        if active and active.lower() == 'true':
+            filters['active'] = True
+        elif active and active.lower() == 'false':
+            filters['active'] = False
+
         if mapped:
             param = Q(mapping__destination_type=destination_type)
         elif mapped is False:
@@ -247,13 +273,13 @@ class ExpenseAttributesMappingView(ListAPIView):
         else:
             return ExpenseAttribute.objects.filter(
                 reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)),
-                workspace_id=self.kwargs['workspace_id'], attribute_type=source_type,
+                **filters,
             ).order_by('value').all()
 
         return ExpenseAttribute.objects.filter(
             reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)),
             param,
-            workspace_id=self.kwargs['workspace_id'], attribute_type=source_type,
+            **filters,
         ).order_by('value').all()
 
 
