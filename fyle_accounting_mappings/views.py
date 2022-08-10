@@ -178,21 +178,20 @@ class MappingStatsView(ListCreateAPIView):
     def get(self, request, *args, **kwargs):
         source_type = self.request.query_params.get('source_type')
         destination_type = self.request.query_params.get('destination_type')
-        active = self.request.query_params.get('active')
 
         assert_valid(source_type is not None, 'query param source_type not found')
         assert_valid(destination_type is not None, 'query param destination_type not found')
 
-        filters = {}
+        filters = {
+            'attribute_type' : source_type,
+            'workspace_id': self.kwargs['workspace_id']
+        }
 
-        if active and active.lower() == 'true':
+        if (source_type == 'PROJECT' and destination_type == 'CUSTOMER') or\
+            (source_type == 'CATEGORY'):
             filters['active'] = True
-        elif active and active.lower() == 'false':
-            filters['active'] = False
 
-        total_attributes_count = ExpenseAttribute.objects.filter(
-            attribute_type=source_type, workspace_id=self.kwargs['workspace_id'], **filters
-        ).count()
+        total_attributes_count = ExpenseAttribute.objects.filter(**filters).count()
 
         if source_type == 'EMPLOYEE':
             filters = {}
@@ -206,16 +205,16 @@ class MappingStatsView(ListCreateAPIView):
                 **filters, workspace_id=self.kwargs['workspace_id']
             ).count()
         else:
-            filters = {}
-
-            if active and active.lower() == 'true':
+            filters = {
+                'source_type' : source_type,
+                'destination_type' : destination_type,
+                'workspace_id': self.kwargs['workspace_id']
+            }
+            if (source_type == 'PROJECT' and destination_type == 'CUSTOMER') or\
+                (source_type == 'CATEGORY'):
                 filters['source__active'] = True
-            elif active and active.lower() == 'false':
-                filters['source__active'] = False
 
-            mapped_attributes_count = Mapping.objects.filter(
-                source_type=source_type, destination_type=destination_type, workspace_id=self.kwargs['workspace_id'], **filters
-            ).count()
+            mapped_attributes_count = Mapping.objects.filter(**filters).count()
 
         return Response(
             data={
@@ -238,7 +237,6 @@ class ExpenseAttributesMappingView(ListAPIView):
         mapped = self.request.query_params.get('mapped')
         all_alphabets = self.request.query_params.get('all_alphabets')
         mapping_source_alphabets = self.request.query_params.get('mapping_source_alphabets')
-        active = self.request.query_params.get('active')
 
         assert_valid(source_type is not None, 'query param source_type not found')
         assert_valid(destination_type is not None, 'query param source_type not found')
@@ -261,10 +259,9 @@ class ExpenseAttributesMappingView(ListAPIView):
             'attribute_type': source_type,
         }
 
-        if active and active.lower() == 'true':
+        if (source_type == 'PROJECT' and destination_type == 'CUSTOMER') or\
+            (source_type == 'CATEGORY'):
             filters['active'] = True
-        elif active and active.lower() == 'false':
-            filters['active'] = False
 
         if mapped:
             param = Q(mapping__destination_type=destination_type)
@@ -272,15 +269,12 @@ class ExpenseAttributesMappingView(ListAPIView):
             param = ~Q(mapping__destination_type=destination_type)
         else:
             return ExpenseAttribute.objects.filter(
-                reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)),
-                **filters,
+                reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)), **filters
             ).order_by('value').all()
 
         return ExpenseAttribute.objects.filter(
             reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)),
-            param,
-            **filters,
-        ).order_by('value').all()
+            param, **filters).order_by('value').all()
 
 
 class EmployeeAttributesMappingView(ListAPIView):
