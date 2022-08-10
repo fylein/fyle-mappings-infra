@@ -182,9 +182,16 @@ class MappingStatsView(ListCreateAPIView):
         assert_valid(source_type is not None, 'query param source_type not found')
         assert_valid(destination_type is not None, 'query param destination_type not found')
 
-        total_attributes_count = ExpenseAttribute.objects.filter(
-            attribute_type=source_type, workspace_id=self.kwargs['workspace_id']
-        ).count()
+        filters = {
+            'attribute_type' : source_type,
+            'workspace_id': self.kwargs['workspace_id']
+        }
+
+        if (source_type == 'PROJECT' and destination_type == 'CUSTOMER') or\
+            (source_type == 'CATEGORY'):
+            filters['active'] = True
+
+        total_attributes_count = ExpenseAttribute.objects.filter(**filters).count()
 
         if source_type == 'EMPLOYEE':
             filters = {}
@@ -198,9 +205,16 @@ class MappingStatsView(ListCreateAPIView):
                 **filters, workspace_id=self.kwargs['workspace_id']
             ).count()
         else:
-            mapped_attributes_count = Mapping.objects.filter(
-                source_type=source_type, destination_type=destination_type, workspace_id=self.kwargs['workspace_id']
-            ).count()
+            filters = {
+                'source_type' : source_type,
+                'destination_type' : destination_type,
+                'workspace_id': self.kwargs['workspace_id']
+            }
+            if (source_type == 'PROJECT' and destination_type == 'CUSTOMER') or\
+                (source_type == 'CATEGORY'):
+                filters['source__active'] = True
+
+            mapped_attributes_count = Mapping.objects.filter(**filters).count()
 
         return Response(
             data={
@@ -240,21 +254,27 @@ class ExpenseAttributesMappingView(ListAPIView):
         else:
             mapped = None
 
+        filters = {
+            'workspace_id' : self.kwargs['workspace_id'],
+            'attribute_type': source_type,
+        }
+
+        if (source_type == 'PROJECT' and destination_type == 'CUSTOMER') or\
+            (source_type == 'CATEGORY'):
+            filters['active'] = True
+
         if mapped:
             param = Q(mapping__destination_type=destination_type)
         elif mapped is False:
             param = ~Q(mapping__destination_type=destination_type)
         else:
             return ExpenseAttribute.objects.filter(
-                reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)),
-                workspace_id=self.kwargs['workspace_id'], attribute_type=source_type,
+                reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)), **filters
             ).order_by('value').all()
 
         return ExpenseAttribute.objects.filter(
             reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets)),
-            param,
-            workspace_id=self.kwargs['workspace_id'], attribute_type=source_type,
-        ).order_by('value').all()
+            param, **filters).order_by('value').all()
 
 
 class EmployeeAttributesMappingView(ListAPIView):
