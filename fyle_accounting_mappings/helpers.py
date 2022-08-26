@@ -238,11 +238,11 @@ class EmployeesAutoMappingHelper:
 
         self.create_mappings_and_update_flag(mapping_creation_batch, mapping_updation_batch, update_key)
 
-
-    def ccc_mapping(self, default_ccc_account_id: str):
+    def ccc_mapping(self, default_ccc_account_id: str, attribute_type: str = None):
         """
         Auto map ccc employees
         :param default_ccc_account_id: Default CCC Account ID
+        :param attribute_type: destination attribute type
         """
         mapping_creation_batch = []
         mapping_updation_batch = []
@@ -251,7 +251,8 @@ class EmployeesAutoMappingHelper:
         employee_source_attributes = self.get_unmapped_source_attributes()
 
         default_destination_attribute = DestinationAttribute.objects.filter(
-            destination_id=default_ccc_account_id, workspace_id=self.workspace_id, attribute_type='CREDIT_CARD_ACCOUNT'
+            destination_id=default_ccc_account_id, workspace_id=self.workspace_id,
+            attribute_type=attribute_type if attribute_type else 'CREDIT_CARD_ACCOUNT'
         ).first()
 
         existing_employee_mappings_map = self.construct_existing_employee_mappings_map()
