@@ -90,7 +90,7 @@ class EmployeesAutoMappingHelper:
                 destination['destination_employee_id'] = self.destination_value_id_map[source_value.lower()]
             elif self.destination_type == 'VENDOR':
                 destination['destination_vendor_id'] = self.destination_value_id_map[source_value.lower()]
-            elif self.destination_type == 'CREDIT_CARD_ACCOUNT':
+            elif self.destination_type == 'CREDIT_CARD_ACCOUNT' or self.destination_type == 'CHARGE_CARD_NUMBER':
                 destination['destination_card_account_id'] = self.destination_value_id_map[source_value.lower()]
 
         return destination
@@ -183,7 +183,7 @@ class EmployeesAutoMappingHelper:
             source_filter['employeemapping__destination_vendor__isnull'] = True
         elif self.destination_type == 'EMPLOYEE':
             source_filter['employeemapping__destination_employee__isnull'] = True
-        elif self.destination_type == 'CREDIT_CARD_ACCOUNT':
+        elif self.destination_type == 'CREDIT_CARD_ACCOUNT' or self.destination_type == 'CHARGE_CARD_NUMBER':
             source_filter['employeemapping__destination_card_account__isnull'] = True
 
         employee_source_attributes_count = ExpenseAttribute.objects.filter(**source_filter).count()
