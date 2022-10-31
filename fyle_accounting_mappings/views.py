@@ -184,7 +184,8 @@ class MappingStatsView(ListCreateAPIView):
 
         filters = {
             'attribute_type' : source_type,
-            'workspace_id': self.kwargs['workspace_id']
+            'workspace_id': self.kwargs['workspace_id'],
+            ~Q(destination_value='Activity')
         }
 
         if (source_type == 'PROJECT' and destination_type == 'CUSTOMER') or\
@@ -194,7 +195,9 @@ class MappingStatsView(ListCreateAPIView):
         total_attributes_count = ExpenseAttribute.objects.filter(**filters).count()
 
         if source_type == 'EMPLOYEE':
-            filters = {}
+            filters = {
+                ~Q(destination_value='Activity')
+            }
 
             if destination_type == 'VENDOR':
                 filters['destination_vendor__attribute_type'] = destination_type
@@ -208,7 +211,8 @@ class MappingStatsView(ListCreateAPIView):
             filters = {
                 'source_type' : source_type,
                 'destination_type' : destination_type,
-                'workspace_id': self.kwargs['workspace_id']
+                'workspace_id': self.kwargs['workspace_id'],
+                ~Q(destination_value='Activity')
             }
             if (source_type == 'PROJECT' and destination_type == 'CUSTOMER') or\
                 (source_type == 'CATEGORY'):
