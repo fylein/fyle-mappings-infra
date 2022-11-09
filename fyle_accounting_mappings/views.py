@@ -201,10 +201,10 @@ class MappingStatsView(ListCreateAPIView):
                 filters['destination_vendor__attribute_type'] = destination_type
             else:
                 filters['destination_employee__attribute_type'] = destination_type
-            
+
             if app_name == 'XERO':
                 mapped_attributes_count = Mapping.objects.filter(
-                    workspace_id=self.kwargs['workspace_id'], source_type = 'EMPLOYEE'
+                    workspace_id=self.kwargs['workspace_id'], source_type='EMPLOYEE'
                 ).count()
             else:
                 mapped_attributes_count = EmployeeMapping.objects.filter(
