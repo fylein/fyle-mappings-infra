@@ -178,6 +178,7 @@ class MappingStatsView(ListCreateAPIView):
     def get(self, request, *args, **kwargs):
         source_type = self.request.query_params.get('source_type')
         destination_type = self.request.query_params.get('destination_type')
+        app_name = self.request.query_params.get('app_name')
 
         assert_valid(source_type is not None, 'query param source_type not found')
         assert_valid(destination_type is not None, 'query param destination_type not found')
@@ -187,8 +188,8 @@ class MappingStatsView(ListCreateAPIView):
             'workspace_id': self.kwargs['workspace_id']
         }
 
-        if (source_type == 'PROJECT' and destination_type == 'CUSTOMER') or\
-            (source_type == 'CATEGORY'):
+        if ((source_type == 'PROJECT' and destination_type == 'CUSTOMER') or\
+            (source_type == 'CATEGORY')) and app_name != 'XERO':
             filters['active'] = True
 
         total_attributes_count = ExpenseAttribute.objects.filter(**filters).count()
@@ -200,18 +201,23 @@ class MappingStatsView(ListCreateAPIView):
                 filters['destination_vendor__attribute_type'] = destination_type
             else:
                 filters['destination_employee__attribute_type'] = destination_type
-
-            mapped_attributes_count = EmployeeMapping.objects.filter(
-                **filters, workspace_id=self.kwargs['workspace_id']
-            ).count()
+            
+            if app_name == 'XERO':
+                mapped_attributes_count = Mapping.objects.filter(
+                    workspace_id=self.kwargs['workspace_id'], source_type = 'EMPLOYEE'
+                ).count()
+            else:
+                mapped_attributes_count = EmployeeMapping.objects.filter(
+                    **filters, workspace_id=self.kwargs['workspace_id']
+                ).count()
         else:
             filters = {
                 'source_type' : source_type,
                 'destination_type' : destination_type,
                 'workspace_id': self.kwargs['workspace_id']
             }
-            if (source_type == 'PROJECT' and destination_type == 'CUSTOMER') or\
-                (source_type == 'CATEGORY'):
+            if ((source_type == 'PROJECT' and destination_type == 'CUSTOMER') or\
+                (source_type == 'CATEGORY')) and app_name != 'XERO':
                 filters['source__active'] = True
 
             mapped_attributes_count = Mapping.objects.filter(**filters).count()
@@ -237,6 +243,7 @@ class ExpenseAttributesMappingView(ListAPIView):
         mapped = self.request.query_params.get('mapped')
         all_alphabets = self.request.query_params.get('all_alphabets')
         mapping_source_alphabets = self.request.query_params.get('mapping_source_alphabets')
+        app_name = self.request.query_params.get('app_name')
 
         assert_valid(source_type is not None, 'query param source_type not found')
         assert_valid(destination_type is not None, 'query param source_type not found')
@@ -259,8 +266,8 @@ class ExpenseAttributesMappingView(ListAPIView):
             'attribute_type': source_type,
         }
 
-        if (source_type == 'PROJECT' and destination_type == 'CUSTOMER') or\
-            (source_type == 'CATEGORY'):
+        if ((source_type == 'PROJECT' and destination_type == 'CUSTOMER') or\
+            (source_type == 'CATEGORY')) and app_name != 'XERO':
             filters['active'] = True
 
         if mapped:
