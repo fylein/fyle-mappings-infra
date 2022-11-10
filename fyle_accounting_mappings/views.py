@@ -178,7 +178,7 @@ class MappingStatsView(ListCreateAPIView):
     def get(self, request, *args, **kwargs):
         source_type = self.request.query_params.get('source_type')
         destination_type = self.request.query_params.get('destination_type')
-        app_name = self.request.query_params.get('app_name')
+        app_name = self.request.query_params.get('app_name', None)
 
         assert_valid(source_type is not None, 'query param source_type not found')
         assert_valid(destination_type is not None, 'query param destination_type not found')
@@ -243,7 +243,7 @@ class ExpenseAttributesMappingView(ListAPIView):
         mapped = self.request.query_params.get('mapped')
         all_alphabets = self.request.query_params.get('all_alphabets')
         mapping_source_alphabets = self.request.query_params.get('mapping_source_alphabets')
-        app_name = self.request.query_params.get('app_name')
+        app_name = self.request.query_params.get('app_name', None)
 
         assert_valid(source_type is not None, 'query param source_type not found')
         assert_valid(destination_type is not None, 'query param source_type not found')
