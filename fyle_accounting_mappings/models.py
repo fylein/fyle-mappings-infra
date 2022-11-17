@@ -195,14 +195,11 @@ class ExpenseAttribute(models.Model):
                     )
                 )
             else:
-                if update and (
-                        ('detail' in attribute and attribute['detail'] != primary_key_map[attribute['value']]['detail'])
-                        or
-                        ('active' in attribute and attribute['active'] != primary_key_map[attribute['value']]['active'])
-                    ):
+                if update:
                     attributes_to_be_updated.append(
                         ExpenseAttribute(
                             id=primary_key_map[attribute['value']]['id'],
+                            source_id=attribute['source_id'],
                             detail=attribute['detail'] if 'detail' in attribute else None,
                             active=attribute['active'] if 'active' in attribute else None
                         )
@@ -211,7 +208,7 @@ class ExpenseAttribute(models.Model):
             ExpenseAttribute.objects.bulk_create(attributes_to_be_created, batch_size=50)
 
         if attributes_to_be_updated:
-            ExpenseAttribute.objects.bulk_update(attributes_to_be_updated, fields=['detail', 'active'], batch_size=50)
+            ExpenseAttribute.objects.bulk_update(attributes_to_be_updated, fields=['source_id', 'detail', 'active'], batch_size=50)
 
     @staticmethod
     def get_last_synced_at(attribute_type: str, workspace_id: int):
