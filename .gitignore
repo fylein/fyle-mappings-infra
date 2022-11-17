@@ -5,7 +5,6 @@ __pycache__/
 DS_Store/
 *.DS_Store
 .DS_Store
-fyle_netsuite_api/.DS_Store
 
 # C extensions
 *.so
