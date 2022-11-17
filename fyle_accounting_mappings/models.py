@@ -208,7 +208,8 @@ class ExpenseAttribute(models.Model):
             ExpenseAttribute.objects.bulk_create(attributes_to_be_created, batch_size=50)
 
         if attributes_to_be_updated:
-            ExpenseAttribute.objects.bulk_update(attributes_to_be_updated, fields=['source_id', 'detail', 'active'], batch_size=50)
+            ExpenseAttribute.objects.bulk_update(
+                attributes_to_be_updated, fields=['source_id', 'detail', 'active'], batch_size=50)
 
     @staticmethod
     def get_last_synced_at(attribute_type: str, workspace_id: int):
