@@ -1,6 +1,6 @@
 import importlib
 from typing import List, Dict
-import datetime
+from datetime import datetime
 from django.db import models, transaction
 from django.db.models import JSONField
 
@@ -335,7 +335,7 @@ class DestinationAttribute(models.Model):
                             value=attribute['value'],
                             detail=attribute['detail'] if 'detail' in attribute else None,
                             active=attribute['active'] if 'active' in attribute else None,
-                            updated_at=datetime.datetime.now()
+                            updated_at=datetime.now()
                         )
                     )
         if attributes_to_be_created:
