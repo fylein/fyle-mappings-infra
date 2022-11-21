@@ -1,6 +1,6 @@
 import importlib
 from typing import List, Dict
-
+from datetime import datetime
 from django.db import models, transaction
 from django.db.models import JSONField
 
@@ -332,7 +332,8 @@ class DestinationAttribute(models.Model):
                             id=primary_key_map[attribute['destination_id']]['id'],
                             value=attribute['value'],
                             detail=attribute['detail'] if 'detail' in attribute else None,
-                            active=attribute['active'] if 'active' in attribute else None
+                            active=attribute['active'] if 'active' in attribute else None,
+                            updated_at=datetime.now()
                         )
                     )
         if attributes_to_be_created:
@@ -340,7 +341,7 @@ class DestinationAttribute(models.Model):
 
         if attributes_to_be_updated:
             DestinationAttribute.objects.bulk_update(
-                attributes_to_be_updated, fields=['detail', 'value', 'active'], batch_size=50)
+                attributes_to_be_updated, fields=['detail', 'value', 'active', 'updated_at'], batch_size=50)
 
 
 class MappingSetting(models.Model):
