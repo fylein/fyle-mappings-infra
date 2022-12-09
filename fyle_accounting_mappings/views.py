@@ -146,7 +146,7 @@ class CategoryMappingsView(ListCreateAPIView):
 
     def get_queryset(self):
         return CategoryMapping.objects.filter(
-            workspace_id=self.kwargs['workspace_id']
+            workspace_id=self.kwargs['workspace_id'], source_category__active=True
         ).all().order_by('source_category__value')
 
 
