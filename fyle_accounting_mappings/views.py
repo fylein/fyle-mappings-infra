@@ -145,8 +145,14 @@ class CategoryMappingsView(ListCreateAPIView):
     serializer_class = CategoryMappingSerializer
 
     def get_queryset(self):
+        source_active = self.request.query_params.get('source_active')
+
+        params = {}
+        if source_active and source_active == 'true':
+            params['source_category__active'] = True
+
         return CategoryMapping.objects.filter(
-            workspace_id=self.kwargs['workspace_id']
+            workspace_id=self.kwargs['workspace_id'], **params
         ).all().order_by('source_category__value')
 
 
