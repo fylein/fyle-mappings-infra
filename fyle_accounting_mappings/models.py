@@ -391,7 +391,7 @@ class MappingSetting(models.Model):
 
 class Mapping(models.Model):
     """
-    Mappingsmappings/settings/'
+    Mappings
     """
     id = models.AutoField(primary_key=True)
     source_type = models.CharField(max_length=255, help_text='Fyle Enum')
