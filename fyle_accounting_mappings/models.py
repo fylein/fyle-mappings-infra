@@ -108,7 +108,7 @@ class ExpenseAttribute(models.Model):
     id = models.AutoField(primary_key=True)
     attribute_type = models.CharField(max_length=255, help_text='Type of expense attribute')
     display_name = models.CharField(max_length=255, help_text='Display name of expense attribute')
-    value = models.CharField(max_length=1000, help_text='Value of expense attribute')
+    value = models.CharField(max_length=255, help_text='Value of expense attribute')
     source_id = models.CharField(max_length=255, help_text='Fyle ID')
     workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
     auto_mapped = models.BooleanField(default=False, help_text='Indicates whether the field is auto mapped or not')
