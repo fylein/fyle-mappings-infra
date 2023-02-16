@@ -346,4 +346,6 @@ class EmployeeAttributesMappingView(ListAPIView):
         else:
             return self.filter_expense_attributes_with_additional_filters(self.kwargs['workspace_id'], mapping_source_alphabets)
 
-        return self.filter_expense_attributes_with_additional_filters(self.kwargs['workspace_id'], mapping_source_alphabets, param)
+        return self.filter_expense_attributes_with_additional_filters(
+            self.kwargs['workspace_id'], mapping_source_alphabets, param
+        )
