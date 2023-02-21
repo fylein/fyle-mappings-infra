@@ -650,3 +650,37 @@ class CategoryMapping(models.Model):
         )
 
         return category_mapping
+
+
+class ExpenseFields(models.Model):
+    """
+    Expense Fields
+    """
+
+    id = models.AutoField(primary_key=True)
+    attribute_type = models.CharField(null=True, max_length=255, help_text='Attribute Type')
+    source_field_id = models.IntegerField(null=True, max_length=255, help_text='Field ID')
+    workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
+    is_enabled = models.BooleanField(default=False, help_text='Is the field Enabled')
+    created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
+    updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
+
+    class Meta:
+        db_table = 'expense_fields'
+
+
+    @staticmethod
+    def create_or_update_expense_fields(attribute: Dict, workspace_id):
+        """
+        Update or Create Expense Fields
+        """
+        
+        # Will add Bulk Update Later
+        expense_fields, _ = ExpenseFields.objects.update_or_create(
+            attribute_type=attribute['attribute_type'],
+            source_field_id=attribute['expense_id'],
+            workspace_id=workspace_id,
+            is_enabled = attribute['active'] if 'active' in attribute else None,
+        )
+
+        return expense_fields
