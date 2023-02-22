@@ -670,17 +670,18 @@ class ExpenseFields(models.Model):
 
 
     @staticmethod
-    def create_or_update_expense_fields(attribute: Dict, workspace_id):
+    def create_or_update_expense_fields(attributes: List[Dict], workspace_id):
         """
         Update or Create Expense Fields
         """
         
-        # Will add Bulk Update Later
-        expense_fields, _ = ExpenseFields.objects.update_or_create(
-            attribute_type=attribute['attribute_type'],
-            source_field_id=attribute['expense_id'],
-            workspace_id=workspace_id,
-            is_enabled = attribute['active'] if 'active' in attribute else None,
-        )
+        # Looping over Expense Field Values
+        for expense_field_attribute in attributes:
+            expense_fields, _ = ExpenseFields.objects.update_or_create(
+                attribute_type=expense_field_attribute['attribute_type'],
+                source_field_id=expense_field_attribute['expense_id'],
+                workspace_id=workspace_id,
+                is_enabled = expense_field_attribute['active'] if 'active' in expense_field_attribute else False,
+            )
 
         return expense_fields
