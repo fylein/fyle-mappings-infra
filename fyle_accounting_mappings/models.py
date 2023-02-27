@@ -7,6 +7,7 @@ from django.db.models import JSONField
 from .exceptions import BulkError
 from .utils import assert_valid
 
+
 workspace_models = importlib.import_module("apps.workspaces.models")
 Workspace = workspace_models.Workspace
 
@@ -344,6 +345,41 @@ class DestinationAttribute(models.Model):
                 attributes_to_be_updated, fields=['detail', 'value', 'active', 'updated_at'], batch_size=50)
 
 
+class ExpenseFields(models.Model):
+    """
+    Expense Fields
+    """
+
+    id = models.AutoField(primary_key=True)
+    attribute_type = models.CharField(null=True, max_length=255, help_text='Attribute Type')
+    source_field_id = models.IntegerField(null=True, max_length=255, help_text='Field ID')
+    workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
+    is_enabled = models.BooleanField(default=False, help_text='Is the field Enabled')
+    created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
+    updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
+
+    class Meta:
+        db_table = 'expense_fields'
+
+
+    @staticmethod
+    def create_or_update_expense_fields(attributes: List[Dict], workspace_id):
+        """
+        Update or Create Expense Fields
+        """
+
+        # Looping over Expense Field Values
+        for expense_field_attribute in attributes:
+            expense_fields, _ = ExpenseFields.objects.update_or_create(
+                attribute_type=expense_field_attribute['attribute_type'],
+                source_field_id=expense_field_attribute['expense_id'],
+                workspace_id=workspace_id,
+                is_enabled=expense_field_attribute['active'] if 'active' in expense_field_attribute else False,
+            )
+
+        return expense_fields
+
+
 class MappingSetting(models.Model):
     """
     Mapping Settings
@@ -354,6 +390,10 @@ class MappingSetting(models.Model):
     import_to_fyle = models.BooleanField(default=False, help_text='Import to Fyle or not')
     is_custom = models.BooleanField(default=False, help_text='Custom Field or not')
     source_placeholder = models.TextField(help_text='placeholder of source field', null=True)
+    expense_field = models.ForeignKey(
+        ExpenseFields, on_delete=models.PROTECT, help_text='Reference to Workspace model',
+        related_name='expense_fields', null=True
+    )
     workspace = models.ForeignKey(
         Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model',
         related_name='mapping_settings'
@@ -375,10 +415,16 @@ class MappingSetting(models.Model):
 
         with transaction.atomic():
             for setting in settings:
+                expense_field_id = ExpenseFields.objects.filter(
+                    workspace_id=workspace_id,
+                    attribute_type=setting['source_field']
+                ).id
+
                 mapping_setting, _ = MappingSetting.objects.update_or_create(
                     source_field=setting['source_field'],
                     workspace_id=workspace_id,
                     destination_field=setting['destination_field'],
+                    expense_field_id=expense_field_id,
                     defaults={
                         'import_to_fyle': setting['import_to_fyle'] if 'import_to_fyle' in setting else False,
                         'is_custom': setting['is_custom'] if 'is_custom' in setting else False
@@ -650,38 +696,3 @@ class CategoryMapping(models.Model):
         )
 
         return category_mapping
-
-
-class ExpenseFields(models.Model):
-    """
-    Expense Fields
-    """
-
-    id = models.AutoField(primary_key=True)
-    attribute_type = models.CharField(null=True, max_length=255, help_text='Attribute Type')
-    source_field_id = models.IntegerField(null=True, max_length=255, help_text='Field ID')
-    workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
-    is_enabled = models.BooleanField(default=False, help_text='Is the field Enabled')
-    created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
-    updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
-
-    class Meta:
-        db_table = 'expense_fields'
-
-
-    @staticmethod
-    def create_or_update_expense_fields(attributes: List[Dict], workspace_id):
-        """
-        Update or Create Expense Fields
-        """
-        
-        # Looping over Expense Field Values
-        for expense_field_attribute in attributes:
-            expense_fields, _ = ExpenseFields.objects.update_or_create(
-                attribute_type=expense_field_attribute['attribute_type'],
-                source_field_id=expense_field_attribute['expense_id'],
-                workspace_id=workspace_id,
-                is_enabled = expense_field_attribute['active'] if 'active' in expense_field_attribute else False,
-            )
-
-        return expense_fields
