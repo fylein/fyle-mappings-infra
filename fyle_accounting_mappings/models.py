@@ -352,7 +352,7 @@ class ExpenseFields(models.Model):
 
     id = models.AutoField(primary_key=True)
     attribute_type = models.CharField(null=True, max_length=255, help_text='Attribute Type')
-    source_field_id = models.IntegerField(null=True, max_length=255, help_text='Field ID')
+    source_field_id = models.IntegerField(null=True, help_text='Field ID')
     workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
     is_enabled = models.BooleanField(default=False, help_text='Is the field Enabled')
     created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
@@ -369,12 +369,12 @@ class ExpenseFields(models.Model):
         """
 
         # Looping over Expense Field Values
-        
+
         for expense_field in attributes:
             if expense_field['field_name'] in fields_included:
                 expense_fields, _ = ExpenseFields.objects.update_or_create(
-                    attribute_type=expense_field['attribute_type'],
-                    source_field_id=expense_field['expense_id'],
+                    attribute_type=expense_field['field_name'].replace(' ', '_').upper(),
+                    source_field_id=expense_field['id'],
                     workspace_id=workspace_id,
                     is_enabled=expense_field['active'] if 'active' in expense_field else False,
                 )
@@ -417,7 +417,7 @@ class MappingSetting(models.Model):
 
         with transaction.atomic():
             for setting in settings:
-                expense_field_id = ExpenseFields.objects.filter(
+                expense_field_id = ExpenseFields.objects.get(
                     workspace_id=workspace_id,
                     attribute_type=setting['source_field']
                 ).id
