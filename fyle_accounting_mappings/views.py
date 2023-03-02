@@ -10,10 +10,10 @@ from django.db.models import Count, Q
 
 from .exceptions import BulkError
 from .utils import assert_valid
-from .models import MappingSetting, Mapping, ExpenseAttribute, DestinationAttribute, EmployeeMapping, CategoryMapping
+from .models import MappingSetting, Mapping, ExpenseAttribute, DestinationAttribute, EmployeeMapping, CategoryMapping, ExpenseField
 from .serializers import ExpenseAttributeMappingSerializer, MappingSettingSerializer, MappingSerializer, \
     EmployeeMappingSerializer, CategoryMappingSerializer, DestinationAttributeSerializer, \
-    EmployeeAttributeMappingSerializer
+    EmployeeAttributeMappingSerializer, ExpenseFieldSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -349,3 +349,14 @@ class EmployeeAttributesMappingView(ListAPIView):
         return self.filter_expense_attributes_with_additional_filters(
             self.kwargs['workspace_id'], mapping_source_alphabets, param
         )
+
+class ExpenseFieldView(ListAPIView):
+    """
+    Expense Field View
+    """
+    serializer_class = ExpenseFieldSerializer
+
+    def get_queryset(self):
+        return ExpenseField.objects.filter(
+            workspace_id=self.kwargs['workspace_id']
+        ).all()
