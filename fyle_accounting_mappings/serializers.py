@@ -3,7 +3,8 @@ Mapping Serializers
 """
 from rest_framework import serializers
 from django.db.models.query import Q
-from .models import ExpenseAttribute, DestinationAttribute, Mapping, MappingSetting, EmployeeMapping, CategoryMapping, ExpenseField
+from .models import ExpenseAttribute, DestinationAttribute, Mapping, MappingSetting, EmployeeMapping, \
+    CategoryMapping, ExpenseField
 
 
 class ExpenseAttributeSerializer(serializers.ModelSerializer):
@@ -40,7 +41,7 @@ class ExpenseFieldSerializer(serializers.ModelSerializer):
     """
     Expense Field Serializer
     """
-    
+
     class Meta:
         model = ExpenseField
         fields = '__all__'
