@@ -10,7 +10,8 @@ from django.db.models import Count, Q
 
 from .exceptions import BulkError
 from .utils import assert_valid
-from .models import MappingSetting, Mapping, ExpenseAttribute, DestinationAttribute, EmployeeMapping, CategoryMapping, ExpenseField
+from .models import MappingSetting, Mapping, ExpenseAttribute, DestinationAttribute, EmployeeMapping, \
+    CategoryMapping, ExpenseField
 from .serializers import ExpenseAttributeMappingSerializer, MappingSettingSerializer, MappingSerializer, \
     EmployeeMappingSerializer, CategoryMappingSerializer, DestinationAttributeSerializer, \
     EmployeeAttributeMappingSerializer, ExpenseFieldSerializer
