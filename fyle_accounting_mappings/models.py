@@ -345,14 +345,14 @@ class DestinationAttribute(models.Model):
                 attributes_to_be_updated, fields=['detail', 'value', 'active', 'updated_at'], batch_size=50)
 
 
-class ExpenseFields(models.Model):
+class ExpenseField(models.Model):
     """
     Expense Fields
     """
 
     id = models.AutoField(primary_key=True)
-    attribute_type = models.CharField(null=True, max_length=255, help_text='Attribute Type')
-    source_field_id = models.IntegerField(null=True, help_text='Field ID')
+    attribute_type = models.CharField(max_length=255, help_text='Attribute Type')
+    source_field_id = models.IntegerField(help_text='Field ID')
     workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
     is_enabled = models.BooleanField(default=False, help_text='Is the field Enabled')
     created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
@@ -372,7 +372,7 @@ class ExpenseFields(models.Model):
 
         for expense_field in attributes:
             if expense_field['field_name'] in fields_included:
-                expense_fields, _ = ExpenseFields.objects.update_or_create(
+                expense_fields, _ = ExpenseField.objects.update_or_create(
                     attribute_type=expense_field['field_name'].replace(' ', '_').upper(),
                     source_field_id=expense_field['id'],
                     workspace_id=workspace_id,
@@ -393,7 +393,7 @@ class MappingSetting(models.Model):
     is_custom = models.BooleanField(default=False, help_text='Custom Field or not')
     source_placeholder = models.TextField(help_text='placeholder of source field', null=True)
     expense_field = models.ForeignKey(
-        ExpenseFields, on_delete=models.PROTECT, help_text='Reference to Workspace model',
+        ExpenseField, on_delete=models.PROTECT, help_text='Reference to Expense Field model',
         related_name='expense_fields', null=True
     )
     workspace = models.ForeignKey(
@@ -417,16 +417,12 @@ class MappingSetting(models.Model):
 
         with transaction.atomic():
             for setting in settings:
-                expense_field_id = ExpenseFields.objects.get(
-                    workspace_id=workspace_id,
-                    attribute_type=setting['source_field']
-                ).id
 
                 mapping_setting, _ = MappingSetting.objects.update_or_create(
                     source_field=setting['source_field'],
                     workspace_id=workspace_id,
                     destination_field=setting['destination_field'],
-                    expense_field_id=expense_field_id,
+                    expense_field_id=setting['expense_field'] if 'expense_field' in setting else None,
                     defaults={
                         'import_to_fyle': setting['import_to_fyle'] if 'import_to_fyle' in setting else False,
                         'is_custom': setting['is_custom'] if 'is_custom' in setting else False
