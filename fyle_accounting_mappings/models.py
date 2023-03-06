@@ -422,7 +422,7 @@ class MappingSetting(models.Model):
                     source_field=setting['source_field'],
                     workspace_id=workspace_id,
                     destination_field=setting['destination_field'],
-                    expense_field_id=setting['expense_field'] if 'expense_field' in setting else None,
+                    expense_field_id=setting['parent_field'] if 'parent_field' in setting else None,
                     defaults={
                         'import_to_fyle': setting['import_to_fyle'] if 'import_to_fyle' in setting else False,
                         'is_custom': setting['is_custom'] if 'is_custom' in setting else False
