@@ -369,9 +369,8 @@ class ExpenseField(models.Model):
         """
 
         # Looping over Expense Field Values
-
         for expense_field in attributes:
-            if expense_field['field_name'] in fields_included:
+            if expense_field['field_name'] in fields_included or expense_field['type'] == 'DEPENDENT_SELECT':
                 expense_fields, _ = ExpenseField.objects.update_or_create(
                     attribute_type=expense_field['field_name'].replace(' ', '_').upper(),
                     source_field_id=expense_field['id'],
@@ -379,7 +378,7 @@ class ExpenseField(models.Model):
                     is_enabled=expense_field['active'] if 'active' in expense_field else False,
                 )
 
-        return expense_fields
+        return attributes
 
 
 class MappingSetting(models.Model):
