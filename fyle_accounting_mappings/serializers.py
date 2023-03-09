@@ -3,7 +3,8 @@ Mapping Serializers
 """
 from rest_framework import serializers
 from django.db.models.query import Q
-from .models import ExpenseAttribute, DestinationAttribute, Mapping, MappingSetting, EmployeeMapping, CategoryMapping
+from .models import ExpenseAttribute, DestinationAttribute, Mapping, MappingSetting, EmployeeMapping, \
+    CategoryMapping, ExpenseField
 
 
 class ExpenseAttributeSerializer(serializers.ModelSerializer):
@@ -34,6 +35,16 @@ class DestinationAttributeSerializer(serializers.ModelSerializer):
             'value', 'attribute_type', 'destination_id', 'workspace', 'detail',
             'auto_created', 'active', 'display_name'
         )
+
+
+class ExpenseFieldSerializer(serializers.ModelSerializer):
+    """
+    Expense Field Serializer
+    """
+
+    class Meta:
+        model = ExpenseField
+        fields = '__all__'
 
 
 class MappingSettingSerializer(serializers.ModelSerializer):
