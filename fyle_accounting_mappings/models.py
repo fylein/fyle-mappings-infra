@@ -368,7 +368,7 @@ class ExpenseField(models.Model):
         Update or Create Expense Fields
         """
         # Looping over Expense Field Values
-        expense_fields: ExpenseField = None
+        expense_fields = None
         for expense_field in attributes:
             if expense_field['field_name'] in fields_included or expense_field['type'] == 'DEPENDENT_SELECT':
                 expense_fields, _ = ExpenseField.objects.update_or_create(
