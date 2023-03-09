@@ -37,7 +37,8 @@ class MappingSettingsView(ListCreateAPIView, DestroyAPIView):
 
             assert_valid(mapping_settings != [], 'Mapping settings not found')
 
-            mapping_settings = MappingSetting.bulk_upsert_mapping_setting(mapping_settings, self.kwargs['workspace_id'])
+            MappingSetting.bulk_upsert_mapping_setting(mapping_settings, self.kwargs['workspace_id'])
+            mapping_settings: MappingSetting = MappingSetting.objects.filter(workspace_id=self.kwargs['workspace_id'])
 
             return Response(data=self.serializer_class(mapping_settings, many=True).data, status=status.HTTP_200_OK)
         except BulkError as exception:
