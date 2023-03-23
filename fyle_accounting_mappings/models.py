@@ -360,6 +360,7 @@ class ExpenseField(models.Model):
 
     class Meta:
         db_table = 'expense_fields'
+        unique_together = ('attribute_type', 'workspace_id')
 
 
     @staticmethod
