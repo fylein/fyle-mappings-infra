@@ -6,7 +6,6 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('workspaces', '0024_auto_20230321_0740'),
         ('fyle_accounting_mappings', '0020_auto_20230302_0519'),
     ]
 
