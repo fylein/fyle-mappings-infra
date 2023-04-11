@@ -267,7 +267,7 @@ class DestinationAttribute(models.Model):
 
     @staticmethod
     def bulk_create_or_update_destination_attributes(
-            attributes: List[Dict], attribute_type: str, workspace_id: int, update: bool = False, display_name:str = None):
+            attributes: List[Dict], attribute_type: str, workspace_id: int, update: bool = False, display_name: str = None):
         """
         Create Destination Attributes in bulk
         :param update: Update Pre-existing records or not
@@ -284,17 +284,18 @@ class DestinationAttribute(models.Model):
         """
         attribute_destination_id_list = [attribute['destination_id'] for attribute in attributes]
 
-        filter = {
+        filters = {
             'destination_id__in': attribute_destination_id_list,
             'attribute_type': attribute_type,
             'workspace_id': workspace_id
         }
         if display_name:
-            filter = {
+            filters = {
                 'display_name': display_name
             }
 
-        existing_attributes = DestinationAttribute.objects.filter(**filter).values('id', 'value', 'destination_id', 'detail', 'active')
+        existing_attributes = DestinationAttribute.objects.filter(**filters)\
+            .values('id', 'value', 'destination_id', 'detail', 'active')
 
 
 
