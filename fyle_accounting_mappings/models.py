@@ -290,9 +290,7 @@ class DestinationAttribute(models.Model):
             'workspace_id': workspace_id
         }
         if display_name:
-            filters = {
-                'display_name': display_name
-            }
+            filters['display_name'] = display_name
 
         existing_attributes = DestinationAttribute.objects.filter(**filters)\
             .values('id', 'value', 'destination_id', 'detail', 'active')
