@@ -295,8 +295,6 @@ class DestinationAttribute(models.Model):
         existing_attributes = DestinationAttribute.objects.filter(**filters)\
             .values('id', 'value', 'destination_id', 'detail', 'active')
 
-
-
         existing_attribute_destination_ids = []
 
         primary_key_map = {}
