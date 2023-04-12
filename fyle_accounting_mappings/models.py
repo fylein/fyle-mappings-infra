@@ -245,7 +245,7 @@ class DestinationAttribute(models.Model):
 
     class Meta:
         db_table = 'destination_attributes'
-        unique_together = ('destination_id', 'attribute_type', 'workspace')
+        unique_together = ('destination_id', 'attribute_type', 'workspace', 'display_name')
 
     @staticmethod
     def create_or_update_destination_attribute(attribute: Dict, workspace_id):
