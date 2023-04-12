@@ -245,7 +245,7 @@ class DestinationAttribute(models.Model):
 
     class Meta:
         db_table = 'destination_attributes'
-        unique_together = ('destination_id', 'attribute_type', 'workspace')
+        unique_together = ('destination_id', 'attribute_type', 'workspace', 'display_name')
 
     @staticmethod
     def create_or_update_destination_attribute(attribute: Dict, workspace_id):
@@ -267,7 +267,7 @@ class DestinationAttribute(models.Model):
 
     @staticmethod
     def bulk_create_or_update_destination_attributes(
-            attributes: List[Dict], attribute_type: str, workspace_id: int, update: bool = False):
+            attributes: List[Dict], attribute_type: str, workspace_id: int, update: bool = False, display_name: str = None):
         """
         Create Destination Attributes in bulk
         :param update: Update Pre-existing records or not
@@ -284,9 +284,16 @@ class DestinationAttribute(models.Model):
         """
         attribute_destination_id_list = [attribute['destination_id'] for attribute in attributes]
 
-        existing_attributes = DestinationAttribute.objects.filter(
-            destination_id__in=attribute_destination_id_list, attribute_type=attribute_type,
-            workspace_id=workspace_id).values('id', 'value', 'destination_id', 'detail', 'active')
+        filters = {
+            'destination_id__in': attribute_destination_id_list,
+            'attribute_type': attribute_type,
+            'workspace_id': workspace_id
+        }
+        if display_name:
+            filters['display_name'] = display_name
+
+        existing_attributes = DestinationAttribute.objects.filter(**filters)\
+            .values('id', 'value', 'destination_id', 'detail', 'active')
 
         existing_attribute_destination_ids = []
 
@@ -441,7 +448,7 @@ class Mapping(models.Model):
     source_type = models.CharField(max_length=255, help_text='Fyle Enum')
     destination_type = models.CharField(max_length=255, help_text='Destination Enum')
     source = models.ForeignKey(ExpenseAttribute, on_delete=models.PROTECT, related_name='mapping')
-    destination = models.ForeignKey(DestinationAttribute, on_delete=models.PROTECT)
+    destination = models.ForeignKey(DestinationAttribute, on_delete=models.PROTECT, related_name='mapping')
     workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
     created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
     updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
