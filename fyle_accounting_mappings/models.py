@@ -382,7 +382,7 @@ class ExpenseField(models.Model):
                 expense_fields, _ = ExpenseField.objects.update_or_create(
                     attribute_type=expense_field['field_name'].replace(' ', '_').upper(),
                     workspace_id=workspace_id,
-                    default={
+                    defaults={
                         'source_field_id': expense_field['id'],
                         'is_enabled': expense_field['is_enabled'] if 'is_enabled' in expense_field else False
                     }
