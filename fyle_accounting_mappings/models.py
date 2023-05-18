@@ -381,9 +381,11 @@ class ExpenseField(models.Model):
             if expense_field['field_name'] in fields_included or expense_field['type'] == 'DEPENDENT_SELECT':
                 expense_fields, _ = ExpenseField.objects.update_or_create(
                     attribute_type=expense_field['field_name'].replace(' ', '_').upper(),
-                    source_field_id=expense_field['id'],
                     workspace_id=workspace_id,
-                    is_enabled=expense_field['active'] if 'active' in expense_field else False,
+                    defaults={
+                        'source_field_id': expense_field['id'],
+                        'is_enabled': expense_field['is_enabled'] if 'is_enabled' in expense_field else False
+                    }
                 )
 
         return expense_fields
