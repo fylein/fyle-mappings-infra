@@ -279,7 +279,7 @@ class ExpenseAttributesMappingView(ListAPIView):
         }
 
         if ((source_type == 'PROJECT' and destination_type == 'CUSTOMER') or\
-            (source_type == 'CATEGORY')) and app_name != 'XERO':
+            (source_type == 'CATEGORY')):
             filters['active'] = True
 
         param = None
