@@ -261,7 +261,6 @@ class ExpenseAttributesMappingView(ListAPIView):
         mapped = self.request.query_params.get('mapped')
         mapping_source_alphabets = self.request.query_params.get('mapping_source_alphabets', '')
         mapping_source_alphabets = mapping_source_alphabets.split(',')
-        app_name = self.request.query_params.get('app_name', None)
 
         assert_valid(source_type is not None, 'query param source_type not found')
         assert_valid(destination_type is not None, 'query param source_type not found')
