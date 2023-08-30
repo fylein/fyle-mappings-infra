@@ -709,7 +709,7 @@ class CategoryMapping(models.Model):
 
     @staticmethod
     def bulk_create_mappings(destination_attributes: List[DestinationAttribute],
-                            destination_type: str, workspace_id: int, set_auto_mapped_flag: bool = True):
+                             destination_type: str, workspace_id: int, set_auto_mapped_flag: bool = True):
         """
         Create the bulk mapping
         :param destination_attributes: Destination Attributes List with category mapping as null
