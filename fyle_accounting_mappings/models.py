@@ -735,11 +735,16 @@ class CategoryMapping(models.Model):
         Create the bulk mapping
         :param destination_attributes: Destination Attributes List with category mapping as null
         """
+        attribute_value_list = []
+
+        for destination_attribute in destination_attributes:
+            attribute_value_list.append(destination_attribute.value)
+
         # Filtering unmapped Expense Attributes
         source_attributes = ExpenseAttribute.objects.filter(
             workspace_id=workspace_id,
             attribute_type='CATEGORY',
-            value__in=destination_attributes,
+            value__in=attribute_value_list,
             categorymapping__source_category__isnull=True
         ).values('id', 'value')
 
@@ -749,16 +754,16 @@ class CategoryMapping(models.Model):
         mapping_creation_batch = []
 
         for destination_attribute in destination_attributes:
-            if destination_attribute['value'].lower() in source_attributes_id_map:
+            if destination_attribute.value.lower() in source_attributes_id_map:
                 destination = {}
                 if destination_type == 'EXPENSE_TYPE':
-                    destination['destination_expense_head_id'] = destination_attribute['id']
+                    destination['destination_expense_head_id'] = destination_attribute.id
                 elif destination_type == 'ACCOUNT':
-                    destination['destination_account_id'] = destination_attribute['id']
+                    destination['destination_account_id'] = destination_attribute.id
 
                 mapping_creation_batch.append(
                     CategoryMapping(
-                        source_category_id=source_attributes_id_map[destination_attribute['value'].lower()],
+                        source_category_id=source_attributes_id_map[destination_attribute.value.lower()],
                         workspace_id=workspace_id,
                         **destination
                     )
