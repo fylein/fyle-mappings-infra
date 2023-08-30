@@ -38,28 +38,7 @@ def validate_mapping_settings(mappings_settings: List[Dict]):
         raise BulkError('Errors while creating settings', bulk_errors)
 
 
-def create_mappings_and_update_flag(mapping_batch: list, set_auto_mapped_flag: bool = True):
-    mappings = Mapping.objects.bulk_create(mapping_batch, batch_size=50)
-
-    if set_auto_mapped_flag:
-        expense_attributes_to_be_updated = []
-
-        for mapping in mappings:
-            expense_attributes_to_be_updated.append(
-                ExpenseAttribute(
-                    id=mapping.source.id,
-                    auto_mapped=True
-                )
-            )
-
-        if expense_attributes_to_be_updated:
-            ExpenseAttribute.objects.bulk_update(
-                expense_attributes_to_be_updated, fields=['auto_mapped'], batch_size=50)
-
-    return mappings
-
-
-def create_mappings_and_update_flag_new(mapping_batch: list, set_auto_mapped_flag: bool = True, is_category_mapping: bool = False):
+def create_mappings_and_update_flag(mapping_batch: list, set_auto_mapped_flag: bool = True, is_category_mapping: bool = False):
     if is_category_mapping:
         mappings = CategoryMapping.objects.bulk_create(mapping_batch, batch_size=50)
     else:
@@ -769,4 +748,4 @@ class CategoryMapping(models.Model):
                     )
                 )
 
-        return create_mappings_and_update_flag_new(mapping_creation_batch, set_auto_mapped_flag, True)
+        return create_mappings_and_update_flag(mapping_creation_batch, set_auto_mapped_flag, True)
