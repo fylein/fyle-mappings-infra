@@ -38,8 +38,9 @@ def validate_mapping_settings(mappings_settings: List[Dict]):
         raise BulkError('Errors while creating settings', bulk_errors)
 
 
-def create_mappings_and_update_flag(mapping_batch: list, set_auto_mapped_flag: bool = True, is_category_mapping: bool = False):
-    if is_category_mapping:
+def create_mappings_and_update_flag(mapping_batch: list, set_auto_mapped_flag: bool = True, **kwargs):
+    model_type = kwargs['model_type'] if 'model_type' in kwargs else Mapping
+    if model_type == CategoryMapping:
         mappings = CategoryMapping.objects.bulk_create(mapping_batch, batch_size=50)
     else:
         mappings = Mapping.objects.bulk_create(mapping_batch, batch_size=50)
@@ -50,7 +51,7 @@ def create_mappings_and_update_flag(mapping_batch: list, set_auto_mapped_flag: b
         for mapping in mappings:
             expense_attributes_to_be_updated.append(
                 ExpenseAttribute(
-                    id=mapping.source_category.id if is_category_mapping else mapping.source.id,
+                    id=mapping.source_category.id if model_type == CategoryMapping else mapping.source.id,
                     auto_mapped=True
                 )
             )
@@ -735,7 +736,7 @@ class CategoryMapping(models.Model):
         for destination_attribute in destination_attributes:
             if destination_attribute.value.lower() in source_attributes_id_map:
                 destination = {}
-                if destination_type == 'EXPENSE_TYPE':
+                if destination_type in ('EXPENSE_TYPE','EXPENSE_CATEGORY'):
                     destination['destination_expense_head_id'] = destination_attribute.id
                 elif destination_type == 'ACCOUNT':
                     destination['destination_account_id'] = destination_attribute.id
@@ -748,4 +749,4 @@ class CategoryMapping(models.Model):
                     )
                 )
 
-        return create_mappings_and_update_flag(mapping_creation_batch, set_auto_mapped_flag, True)
+        return create_mappings_and_update_flag(mapping_creation_batch, set_auto_mapped_flag, model_type=CategoryMapping)
