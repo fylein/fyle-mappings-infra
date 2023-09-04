@@ -736,7 +736,7 @@ class CategoryMapping(models.Model):
         for destination_attribute in destination_attributes:
             if destination_attribute.value.lower() in source_attributes_id_map:
                 destination = {}
-                if destination_type in ('EXPENSE_TYPE','EXPENSE_CATEGORY'):
+                if destination_type in ('EXPENSE_TYPE', 'EXPENSE_CATEGORY'):
                     destination['destination_expense_head_id'] = destination_attribute.id
                 elif destination_type == 'ACCOUNT':
                     destination['destination_account_id'] = destination_attribute.id
