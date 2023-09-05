@@ -38,8 +38,12 @@ def validate_mapping_settings(mappings_settings: List[Dict]):
         raise BulkError('Errors while creating settings', bulk_errors)
 
 
-def create_mappings_and_update_flag(mapping_batch: list, set_auto_mapped_flag: bool = True):
-    mappings = Mapping.objects.bulk_create(mapping_batch, batch_size=50)
+def create_mappings_and_update_flag(mapping_batch: list, set_auto_mapped_flag: bool = True, **kwargs):
+    model_type = kwargs['model_type'] if 'model_type' in kwargs else Mapping
+    if model_type == CategoryMapping:
+        mappings = CategoryMapping.objects.bulk_create(mapping_batch, batch_size=50)
+    else:
+        mappings = Mapping.objects.bulk_create(mapping_batch, batch_size=50)
 
     if set_auto_mapped_flag:
         expense_attributes_to_be_updated = []
@@ -47,7 +51,7 @@ def create_mappings_and_update_flag(mapping_batch: list, set_auto_mapped_flag: b
         for mapping in mappings:
             expense_attributes_to_be_updated.append(
                 ExpenseAttribute(
-                    id=mapping.source.id,
+                    id=mapping.source_category.id if model_type == CategoryMapping else mapping.source.id,
                     auto_mapped=True
                 )
             )
@@ -703,3 +707,46 @@ class CategoryMapping(models.Model):
         )
 
         return category_mapping
+
+    @staticmethod
+    def bulk_create_mappings(destination_attributes: List[DestinationAttribute],
+                             destination_type: str, workspace_id: int, set_auto_mapped_flag: bool = True):
+        """
+        Create the bulk mapping
+        :param destination_attributes: Destination Attributes List with category mapping as null
+        """
+        attribute_value_list = []
+
+        for destination_attribute in destination_attributes:
+            attribute_value_list.append(destination_attribute.value)
+
+        # Filtering unmapped Expense Attributes
+        source_attributes = ExpenseAttribute.objects.filter(
+            workspace_id=workspace_id,
+            attribute_type='CATEGORY',
+            value__in=attribute_value_list,
+            categorymapping__source_category__isnull=True
+        ).values('id', 'value')
+
+        source_attributes_id_map = {source_attribute['value'].lower(): source_attribute['id'] \
+            for source_attribute in source_attributes}
+
+        mapping_creation_batch = []
+
+        for destination_attribute in destination_attributes:
+            if destination_attribute.value.lower() in source_attributes_id_map:
+                destination = {}
+                if destination_type in ('EXPENSE_TYPE', 'EXPENSE_CATEGORY'):
+                    destination['destination_expense_head_id'] = destination_attribute.id
+                elif destination_type == 'ACCOUNT':
+                    destination['destination_account_id'] = destination_attribute.id
+
+                mapping_creation_batch.append(
+                    CategoryMapping(
+                        source_category_id=source_attributes_id_map[destination_attribute.value.lower()],
+                        workspace_id=workspace_id,
+                        **destination
+                    )
+                )
+
+        return create_mappings_and_update_flag(mapping_creation_batch, set_auto_mapped_flag, model_type=CategoryMapping)
