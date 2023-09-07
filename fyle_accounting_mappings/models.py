@@ -750,3 +750,60 @@ class CategoryMapping(models.Model):
                 )
 
         return create_mappings_and_update_flag(mapping_creation_batch, set_auto_mapped_flag, model_type=CategoryMapping)
+
+    @staticmethod
+    def bulk_create_ccc_category_mappings(workspace_id: int):
+        """
+        Create Category Mappings for CCC Expenses
+        :param workspace_id: Workspace ID
+        """
+        category_mappings = CategoryMapping.objects.filter(
+            workspace_id=workspace_id,
+            destination_account__isnull=True
+        ).all()
+
+        destination_account_internal_ids = []
+
+        for category_mapping in category_mappings:
+            if category_mapping.destination_expense_head.detail and \
+                'gl_account_no' in category_mapping.destination_expense_head.detail and \
+                    category_mapping.destination_expense_head.detail['gl_account_no']:
+                destination_account_internal_ids.append(category_mapping.destination_expense_head.detail['gl_account_no'])
+
+            elif category_mapping.destination_expense_head.detail and \
+                'account_internal_id' in category_mapping.destination_expense_head.detail and \
+                    category_mapping.destination_expense_head.detail['account_internal_id']:
+                destination_account_internal_ids.append(category_mapping.destination_expense_head.detail['account_internal_id'])
+
+        # Retreiving accounts for creating ccc mapping
+        destination_attributes = DestinationAttribute.objects.filter(
+            workspace_id=workspace_id,
+            attribute_type='ACCOUNT',
+            destination_id__in=destination_account_internal_ids
+        ).values('id', 'destination_id')
+
+        destination_id_pk_map = {}
+        for attribute in destination_attributes:
+            destination_id_pk_map[attribute['destination_id'].lower()] = attribute['id']
+
+        mapping_updation_batch = []
+
+        for category_mapping in category_mappings:
+            ccc_account_id = None
+            if category_mapping.destination_expense_head.detail['gl_account_no'].lower() in destination_id_pk_map:
+                ccc_account_id = destination_id_pk_map[category_mapping.destination_expense_head.detail['gl_account_no'].lower()]
+            elif category_mapping.destination_expense_head.detail['account_internal_id'].lower() in destination_id_pk_map:
+                ccc_account_id = destination_id_pk_map[category_mapping.destination_expense_head.detail['account_internal_id'].lower()]
+
+            mapping_updation_batch.append(
+                CategoryMapping(
+                    id=category_mapping.id,
+                    source_category_id=category_mapping.source_category.id,
+                    destination_account_id=ccc_account_id
+                )
+            )
+
+        if mapping_updation_batch:
+            CategoryMapping.objects.bulk_update(
+                mapping_updation_batch, fields=['destination_account'], batch_size=50
+            )
