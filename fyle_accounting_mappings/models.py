@@ -751,6 +751,7 @@ class CategoryMapping(models.Model):
 
         return create_mappings_and_update_flag(mapping_creation_batch, set_auto_mapped_flag, model_type=CategoryMapping)
 
+    @staticmethod
     def bulk_create_ccc_category_mappings(workspace_id: int):
         """
         Create Category Mappings for CCC Expenses
