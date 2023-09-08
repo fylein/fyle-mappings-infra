@@ -751,7 +751,6 @@ class CategoryMapping(models.Model):
 
         return create_mappings_and_update_flag(mapping_creation_batch, set_auto_mapped_flag, model_type=CategoryMapping)
 
-    @staticmethod
     def bulk_create_ccc_category_mappings(workspace_id: int):
         """
         Create Category Mappings for CCC Expenses
@@ -790,9 +789,15 @@ class CategoryMapping(models.Model):
 
         for category_mapping in category_mappings:
             ccc_account_id = None
-            if category_mapping.destination_expense_head.detail['gl_account_no'].lower() in destination_id_pk_map:
+
+            if category_mapping.destination_expense_head.detail and \
+                'gl_account_no' in category_mapping.destination_expense_head.detail and\
+                category_mapping.destination_expense_head.detail['gl_account_no'].lower() in destination_id_pk_map:
                 ccc_account_id = destination_id_pk_map[category_mapping.destination_expense_head.detail['gl_account_no'].lower()]
-            elif category_mapping.destination_expense_head.detail['account_internal_id'].lower() in destination_id_pk_map:
+
+            elif category_mapping.destination_expense_head.detail and \
+                'account_internal_id' in category_mapping.destination_expense_head.detail and \
+                category_mapping.destination_expense_head.detail['account_internal_id'].lower() in destination_id_pk_map:
                 ccc_account_id = destination_id_pk_map[category_mapping.destination_expense_head.detail['account_internal_id'].lower()]
 
             mapping_updation_batch.append(
