@@ -298,7 +298,7 @@ class CategoryAttributesMappingView(ListAPIView):
     Category Mapping View
     """
     serializer_class = CategoryAttributeMappingSerializer
-
+    
     def filter_expense_attributes_with_additional_filters(self, workspace_id, mapping_source_alphabets, param=None):
         filters = {
             'workspace_id' : workspace_id,
@@ -329,21 +329,21 @@ class CategoryAttributesMappingView(ListAPIView):
 
         filters = {}
 
-        if destination_type == 'VENDOR':
-            filters['destination_vendor__attribute_type'] = destination_type
+        if destination_type == 'ACCOUNT':
+            filters['destination_account__attribute_type'] = destination_type
         else:
-            filters['destination_employee__attribute_type'] = destination_type
+            filters['destination_expense_head__attribute_type'] = destination_type
 
-        source_employees = EmployeeMapping.objects.filter(
+        source_categories = CategoryMapping.objects.filter(
             **filters,
             workspace_id=self.kwargs['workspace_id'],
-        ).values_list('source_employee_id', flat=True)
+        ).values_list('source_category_id', flat=True)
 
         param = None
         if mapped:
-            param = Q(employeemapping__source_employee_id__in=source_employees)
+            param = Q(categorymapping__source_category_id__in=source_categories)
         elif mapped is False:
-            param = ~Q(employeemapping__source_employee_id__in=source_employees)
+            param = ~Q(categorymapping__source_category_id__in=source_categories)
         else:
             return self.filter_expense_attributes_with_additional_filters(self.kwargs['workspace_id'], mapping_source_alphabets)
 
@@ -388,21 +388,21 @@ class EmployeeAttributesMappingView(ListAPIView):
 
         filters = {}
 
-        if destination_type == 'ACCOUNT':
-            filters['destination_account__attribute_type'] = destination_type
+        if destination_type == 'VENDOR':
+            filters['destination_vendor__attribute_type'] = destination_type
         else:
-            filters['destination_expense_head__attribute_type'] = destination_type
+            filters['destination_employee__attribute_type'] = destination_type
 
-        source_categories = CategoryMapping.objects.filter(
+        source_employees = EmployeeMapping.objects.filter(
             **filters,
             workspace_id=self.kwargs['workspace_id'],
-        ).values_list('source_category_id', flat=True)
+        ).values_list('source_employee_id', flat=True)
 
         param = None
         if mapped:
-            param = Q(categorymapping__source_category_id__in=source_categories)
+            param = Q(employeemapping__source_employee_id__in=source_employees)
         elif mapped is False:
-            param = ~Q(employeemapping__source_category_id__in=source_categories)
+            param = ~Q(employeemapping__source_employee_id__in=source_employees)
         else:
             return self.filter_expense_attributes_with_additional_filters(self.kwargs['workspace_id'], mapping_source_alphabets)
 
