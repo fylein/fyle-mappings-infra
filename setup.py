@@ -8,7 +8,11 @@ with open('README.md', 'r') as f:
 
 setuptools.setup(
     name='fyle-accounting-mappings',
+<<<<<<< Updated upstream
     version='1.26.5',
+=======
+    version='1.27.0',
+>>>>>>> Stashed changes
     author='Shwetabh Kumar',
     author_email='shwetabh.kumar@fyle.in',
     description='Django application to store the fyle accounting mappings in a generic manner',
