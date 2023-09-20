@@ -298,7 +298,7 @@ class CategoryAttributesMappingView(ListAPIView):
     Category Mapping View
     """
     serializer_class = CategoryAttributeMappingSerializer
-    
+
     def filter_expense_attributes_with_additional_filters(self, workspace_id, mapping_source_alphabets, param=None):
         filters = {
             'workspace_id' : workspace_id,
