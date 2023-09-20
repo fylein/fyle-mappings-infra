@@ -271,7 +271,7 @@ class CategoryMappingFilteredListSerializer(serializers.ListSerializer):
     System Model. The value argument to to_representation() method is
     the model instance
     """
-    
+
     def to_representation(self, data):
         return super(CategoryMappingFilteredListSerializer, self).to_representation(data)
 
@@ -308,12 +308,12 @@ class CategoryMappingSerializerV2(serializers.ModelSerializer):
     source_category = ExpenseAttributeSerializer(required=True)
     destination_account = DestinationAttributeSerializer(allow_null=True)
     destination_expense_head = DestinationAttributeSerializer(allow_null=True)
-    
+
     class Meta:
         model = CategoryMapping
         list_serializer_class = CategoryMappingFilteredListSerializer
         fields = ('source_category', 'destination_account', 'destination_expense_head', 'created_at', 'updated_at')
-        
+
 
 class CategoryAttributeMappingSerializer(serializers.ModelSerializer):
     """
