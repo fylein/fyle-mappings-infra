@@ -288,7 +288,9 @@ class EmployeeMappingSerializerV2(serializers.ModelSerializer):
     class Meta:
         model = EmployeeMapping
         list_serializer_class = EmployeeMappingFilteredListSerializer
-        fields = ('source_employee', 'destination_employee', 'destination_vendor', 'destination_card_account', 'created_at', 'updated_at')
+        fields = (
+            'source_employee', 'destination_employee', 'destination_vendor', 'destination_card_account', 'created_at', 'updated_at'
+        )
 
 
 class EmployeeAttributeMappingSerializer(serializers.ModelSerializer):
