@@ -673,7 +673,7 @@ class CategoryMapping(models.Model):
     Category Mappings
     """
     id = models.AutoField(primary_key=True)
-    source_category = models.OneToOneField(ExpenseAttribute, on_delete=models.PROTECT)
+    source_category = models.OneToOneField(ExpenseAttribute, on_delete=models.PROTECT, related_name='categorymapping')
     destination_account = models.ForeignKey(
         DestinationAttribute, on_delete=models.PROTECT, null=True, related_name='destination_account')
     destination_expense_head = models.ForeignKey(

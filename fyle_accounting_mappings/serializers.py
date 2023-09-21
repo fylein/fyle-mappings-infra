@@ -265,6 +265,17 @@ class EmployeeMappingFilteredListSerializer(serializers.ListSerializer):
         return super(EmployeeMappingFilteredListSerializer, self).to_representation(data)
 
 
+class CategoryMappingFilteredListSerializer(serializers.ListSerializer):
+    """
+    Serializer to filter the active system, which is a boolen field in
+    System Model. The value argument to to_representation() method is
+    the model instance
+    """
+
+    def to_representation(self, data):
+        return super(CategoryMappingFilteredListSerializer, self).to_representation(data)
+
+
 class EmployeeMappingSerializerV2(serializers.ModelSerializer):
     """
     Employee Mapping V2 serializer
@@ -272,11 +283,14 @@ class EmployeeMappingSerializerV2(serializers.ModelSerializer):
     source_employee = ExpenseAttributeSerializer(required=True)
     destination_employee = DestinationAttributeSerializer(allow_null=True)
     destination_vendor = DestinationAttributeSerializer(allow_null=True)
+    destination_card_account = DestinationAttributeSerializer(allow_null=True)
 
     class Meta:
         model = EmployeeMapping
         list_serializer_class = EmployeeMappingFilteredListSerializer
-        fields = ('source_employee', 'destination_employee', 'destination_vendor', 'created_at', 'updated_at')
+        fields = (
+            'source_employee', 'destination_employee', 'destination_vendor', 'destination_card_account', 'created_at', 'updated_at'
+        )
 
 
 class EmployeeAttributeMappingSerializer(serializers.ModelSerializer):
@@ -284,6 +298,31 @@ class EmployeeAttributeMappingSerializer(serializers.ModelSerializer):
     Employee Attributes Mapping serializer
     """
     employeemapping = EmployeeMappingSerializerV2(many=True)
+
+    class Meta:
+        model = ExpenseAttribute
+        fields = '__all__'
+
+
+class CategoryMappingSerializerV2(serializers.ModelSerializer):
+    """
+    Category Mapping V2 serializer
+    """
+    source_category = ExpenseAttributeSerializer(required=True)
+    destination_account = DestinationAttributeSerializer(allow_null=True)
+    destination_expense_head = DestinationAttributeSerializer(allow_null=True)
+
+    class Meta:
+        model = CategoryMapping
+        list_serializer_class = CategoryMappingFilteredListSerializer
+        fields = ('source_category', 'destination_account', 'destination_expense_head', 'created_at', 'updated_at')
+
+
+class CategoryAttributeMappingSerializer(serializers.ModelSerializer):
+    """
+    Employee Attributes Mapping serializer
+    """
+    categorymapping = CategoryMappingSerializerV2(many=True)
 
     class Meta:
         model = ExpenseAttribute

@@ -14,7 +14,7 @@ from .models import MappingSetting, Mapping, ExpenseAttribute, DestinationAttrib
     CategoryMapping, ExpenseField
 from .serializers import ExpenseAttributeMappingSerializer, MappingSettingSerializer, MappingSerializer, \
     EmployeeMappingSerializer, CategoryMappingSerializer, DestinationAttributeSerializer, \
-    EmployeeAttributeMappingSerializer, ExpenseFieldSerializer
+    EmployeeAttributeMappingSerializer, ExpenseFieldSerializer, CategoryAttributeMappingSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -292,6 +292,66 @@ class ExpenseAttributesMappingView(ListAPIView):
         return self.filter_expense_attributes_with_additional_filters(filters, mapping_source_alphabets, param)
 
 
+
+class CategoryAttributesMappingView(ListAPIView):
+    """
+    Category Mapping View
+    """
+    serializer_class = CategoryAttributeMappingSerializer
+
+    def filter_expense_attributes_with_additional_filters(self, workspace_id, mapping_source_alphabets, param=None):
+        filters = {
+            'workspace_id' : workspace_id,
+            'attribute_type': 'CATEGORY'
+        }
+        final_filter = Q(**filters)
+
+        if mapping_source_alphabets:
+            final_filter = final_filter & reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets))
+
+        if param:
+            final_filter = final_filter & param
+
+        return ExpenseAttribute.objects.filter(final_filter).order_by('value').all()
+
+    def get_queryset(self):
+        mapped = self.request.query_params.get('mapped')
+        mapping_source_alphabets = self.request.query_params.get('mapping_source_alphabets', '')
+        mapping_source_alphabets = mapping_source_alphabets.split(',')
+        destination_type = self.request.query_params.get('destination_type', '')
+
+        if mapped and mapped.lower() == 'false':
+            mapped = False
+        elif mapped and mapped.lower() == 'true':
+            mapped = True
+        else:
+            mapped = None
+
+        filters = {}
+
+        if destination_type == 'ACCOUNT':
+            filters['destination_account__attribute_type'] = destination_type
+        else:
+            filters['destination_expense_head__attribute_type'] = destination_type
+
+        source_categories = CategoryMapping.objects.filter(
+            **filters,
+            workspace_id=self.kwargs['workspace_id'],
+        ).values_list('source_category_id', flat=True)
+
+        param = None
+        if mapped:
+            param = Q(categorymapping__source_category_id__in=source_categories)
+        elif mapped is False:
+            param = ~Q(categorymapping__source_category_id__in=source_categories)
+        else:
+            return self.filter_expense_attributes_with_additional_filters(self.kwargs['workspace_id'], mapping_source_alphabets)
+
+        return self.filter_expense_attributes_with_additional_filters(
+            self.kwargs['workspace_id'], mapping_source_alphabets, param
+        )
+
+
 class EmployeeAttributesMappingView(ListAPIView):
     """
     Expense Attributes Mapping View
@@ -349,6 +409,7 @@ class EmployeeAttributesMappingView(ListAPIView):
         return self.filter_expense_attributes_with_additional_filters(
             self.kwargs['workspace_id'], mapping_source_alphabets, param
         )
+
 
 class ExpenseFieldView(ListAPIView):
     """
