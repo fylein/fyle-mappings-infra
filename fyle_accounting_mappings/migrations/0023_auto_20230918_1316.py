@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='categorymapping',
             name='source_category',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='categorymapping', to='fyle_accounting_mappings.expenseattribute'),
+            field=models.OneToOneField(on_delete=django.db.models.deletion.PROTECT, related_name='categorymapping', to='fyle_accounting_mappings.expenseattribute'),
         )
     ]
