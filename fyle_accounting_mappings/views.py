@@ -217,6 +217,17 @@ class MappingStatsView(ListCreateAPIView):
                 mapped_attributes_count = EmployeeMapping.objects.filter(
                     **filters, workspace_id=self.kwargs['workspace_id']
                 ).count()
+        elif source_type == 'CATEGORY' and app_name == 'INTACCT':
+            filters = {}
+
+            if destination_type == 'ACCOUNT':
+                filters['destination_account__attribute_type'] = destination_type
+            else:
+                filters['destination_expense_head__attribute_type'] = destination_type
+
+            mapped_attributes_count = CategoryMapping.objects.filter(
+                **filters, workspace_id=self.kwargs['workspace_id']
+            ).count()
         else:
             filters = {
                 'source_type' : source_type,
