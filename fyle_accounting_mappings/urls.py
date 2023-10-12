@@ -16,6 +16,7 @@ Including another URLconf
 from django.urls import path
 
 from .views import (
+    CategoryAttributesMappingView,
     MappingSettingsView,
     MappingsView,
     EmployeeMappingsView,
@@ -36,6 +37,8 @@ urlpatterns = [
     path('stats/', MappingStatsView.as_view()),
     path('', MappingsView.as_view()),
     path('expense_attributes/', ExpenseAttributesMappingView.as_view()),
+    path('category_attributes/', CategoryAttributesMappingView.as_view()),
     path('employee_attributes/', EmployeeAttributesMappingView.as_view()),
-    path('expense_fields/', ExpenseFieldView.as_view())
+    path('expense_fields/', ExpenseFieldView.as_view()),
+
 ]
