@@ -3,7 +3,7 @@ import operator
 from functools import reduce
 from typing import Dict, List
 
-from rest_framework.generics import ListCreateAPIView, ListAPIView, DestroyAPIView
+from rest_framework.generics import ListCreateAPIView, ListAPIView, DestroyAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import status
 from django.db.models import Count, Q
@@ -225,6 +225,8 @@ class MappingStatsView(ListCreateAPIView):
             else:
                 filters['destination_expense_head__attribute_type'] = destination_type
 
+            filters['source_category__active'] = True
+
             mapped_attributes_count = CategoryMapping.objects.filter(
                 **filters, workspace_id=self.kwargs['workspace_id']
             ).count()
@@ -313,7 +315,8 @@ class CategoryAttributesMappingView(ListAPIView):
     def filter_expense_attributes_with_additional_filters(self, workspace_id, mapping_source_alphabets, param=None):
         filters = {
             'workspace_id' : workspace_id,
-            'attribute_type': 'CATEGORY'
+            'attribute_type': 'CATEGORY',
+            'active': True
         }
         final_filter = Q(**filters)
 
@@ -347,6 +350,7 @@ class CategoryAttributesMappingView(ListAPIView):
 
         source_categories = CategoryMapping.objects.filter(
             **filters,
+            source_category__active=True,
             workspace_id=self.kwargs['workspace_id'],
         ).values_list('source_category_id', flat=True)
 
