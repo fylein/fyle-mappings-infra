@@ -3,7 +3,7 @@ import operator
 from functools import reduce
 from typing import Dict, List
 
-from rest_framework.generics import ListCreateAPIView, ListAPIView, DestroyAPIView
+from rest_framework.generics import ListCreateAPIView, ListAPIView, DestroyAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import status
 from django.db.models import Count, Q
@@ -432,3 +432,71 @@ class ExpenseFieldView(ListAPIView):
         return ExpenseField.objects.filter(
             workspace_id=self.kwargs['workspace_id']
         ).all()
+
+
+
+class CategoryMappingStatsView(RetrieveAPIView):
+    """
+    Stats for total mapped and unmapped count for a given attribute type
+    """
+    def get(self, request, *args, **kwargs):
+        source_active = self.request.query_params.get('source_active')
+
+        params = {}
+        if source_active and source_active == 'true':
+            params['source_category__active'] = True
+
+        destination_type = self.request.query_params.get('destination_type')
+
+        if destination_type == 'ACCOUNT':
+            # check if destination_vendor is not null
+            params['destination_account__isnull'] = False
+        else:
+            # check if destination_employee is not null
+            params['destination_expense_head__isnull'] = False
+
+        total_attributes_count = CategoryMapping.objects.filter(
+            workspace_id=self.kwargs['workspace_id'], **params
+        ).count()
+
+        mapped_attributes_count = CategoryMapping.objects.filter(
+            workspace_id=self.kwargs['workspace_id'], **params
+        ).count()
+
+        return Response(
+            data={
+                'all_attributes_count': total_attributes_count,
+                'unmapped_attributes_count': total_attributes_count - mapped_attributes_count
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+class EmployeeMappingStatsView(RetrieveAPIView):
+    """
+    Stats for total mapped and unmapped count for a given attribute type
+    """
+    def get(self, request, *args, **kwargs):
+        destination_type = self.request.query_params.get('destination_type')
+
+        params = {}
+        if destination_type == 'VENDOR':
+            params['destination_vendor__attribute_type'] = destination_type
+        else:
+            params['destination_employee__attribute_type'] = destination_type
+
+        total_attributes_count = EmployeeMapping.objects.filter(
+            workspace_id=self.kwargs['workspace_id'], **params
+        ).count()
+
+        mapped_attributes_count = EmployeeMapping.objects.filter(
+            workspace_id=self.kwargs['workspace_id'], **params
+        ).count()
+
+        return Response(
+            data={
+                'all_attributes_count': total_attributes_count,
+                'unmapped_attributes_count': total_attributes_count - mapped_attributes_count
+            },
+            status=status.HTTP_200_OK
+        )

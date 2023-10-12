@@ -15,9 +15,20 @@ Including another URLconf
 """
 from django.urls import path
 
-from .views import MappingSettingsView, MappingsView, EmployeeMappingsView, CategoryMappingsView,\
-    SearchDestinationAttributesView, MappingStatsView, ExpenseAttributesMappingView, EmployeeAttributesMappingView,\
-    ExpenseFieldView, CategoryAttributesMappingView
+from .views import (
+    MappingSettingsView,
+    MappingsView,
+    EmployeeMappingsView,
+    CategoryMappingsView,
+    SearchDestinationAttributesView,
+    MappingStatsView,
+    ExpenseAttributesMappingView,
+    EmployeeAttributesMappingView,
+    ExpenseFieldView,
+    CategoryAttributesMappingView,
+    CategoryMappingStatsView,
+    EmployeeMappingStatsView
+)
 
 urlpatterns = [
     path('settings/', MappingSettingsView.as_view()),
@@ -30,5 +41,7 @@ urlpatterns = [
     path('expense_attributes/', ExpenseAttributesMappingView.as_view()),
     path('employee_attributes/', EmployeeAttributesMappingView.as_view()),
     path('category_attributes/', CategoryAttributesMappingView.as_view()),
-    path('expense_fields/', ExpenseFieldView.as_view())
+    path('expense_fields/', ExpenseFieldView.as_view()),
+    path('category/stats/', CategoryMappingStatsView.as_view()),
+    path('employee/stats/', EmployeeMappingStatsView.as_view())
 ]
