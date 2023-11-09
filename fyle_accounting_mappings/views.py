@@ -3,11 +3,13 @@ import operator
 from functools import reduce
 from typing import Dict, List
 
-from rest_framework.generics import ListCreateAPIView, ListAPIView, DestroyAPIView, RetrieveAPIView
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.generics import ListCreateAPIView, ListAPIView, DestroyAPIView
 from rest_framework.response import Response
 from rest_framework.views import status
 from django.db.models import Count, Q
 
+from .utils import LookupFieldMixin
 from .exceptions import BulkError
 from .utils import assert_valid
 from .models import MappingSetting, Mapping, ExpenseAttribute, DestinationAttribute, EmployeeMapping, \
@@ -436,3 +438,16 @@ class ExpenseFieldView(ListAPIView):
         return ExpenseField.objects.filter(
             workspace_id=self.kwargs['workspace_id']
         ).all()
+
+
+class DestinationAttributesView(LookupFieldMixin, ListAPIView):
+    """
+    Destination Attributes view
+    """
+
+    queryset = DestinationAttribute.objects.all()
+    serializer_class = DestinationAttributeSerializer
+    pagination_class = None
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = {'attribute_type': {'exact', 'in'}, 'display_name': {'exact', 'in'}, 'active': {'exact'}}
+    ordering_fields = ('value',)
