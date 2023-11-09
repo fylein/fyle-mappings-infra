@@ -25,7 +25,8 @@ from .views import (
     MappingStatsView,
     ExpenseAttributesMappingView,
     EmployeeAttributesMappingView,
-    ExpenseFieldView
+    ExpenseFieldView,
+    DestinationAttributesView
 )
 
 urlpatterns = [
@@ -40,5 +41,5 @@ urlpatterns = [
     path('category_attributes/', CategoryAttributesMappingView.as_view()),
     path('employee_attributes/', EmployeeAttributesMappingView.as_view()),
     path('expense_fields/', ExpenseFieldView.as_view()),
-
+    path('destination_attributes/', DestinationAttributesView.as_view()),
 ]
