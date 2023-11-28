@@ -43,5 +43,5 @@ urlpatterns = [
     path('employee_attributes/', EmployeeAttributesMappingView.as_view()),
     path('expense_fields/', ExpenseFieldView.as_view()),
     path('destination_attributes/', DestinationAttributesView.as_view()),
-    path('fields/', FyleFieldsView.as_view()),
+    path('fyle_fields/', FyleFieldsView.as_view()),
 ]
