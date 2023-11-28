@@ -344,7 +344,7 @@ class FyleFieldsSerializer(serializers.Serializer):
         """
 
         attribute_types = [
-            'EMPLOYEE', 'CATEGORY', 'PROJECT', 'COST_CENTER', 
+            'EMPLOYEE', 'CATEGORY', 'PROJECT', 'COST_CENTER',
             'TAX_GROUP', 'CORPORATE_CARD', 'MERCHANT'
         ]
 
