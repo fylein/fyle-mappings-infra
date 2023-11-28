@@ -16,7 +16,8 @@ from .models import MappingSetting, Mapping, ExpenseAttribute, DestinationAttrib
     CategoryMapping, ExpenseField
 from .serializers import ExpenseAttributeMappingSerializer, MappingSettingSerializer, MappingSerializer, \
     EmployeeMappingSerializer, CategoryMappingSerializer, DestinationAttributeSerializer, \
-    EmployeeAttributeMappingSerializer, ExpenseFieldSerializer, CategoryAttributeMappingSerializer
+    EmployeeAttributeMappingSerializer, ExpenseFieldSerializer, CategoryAttributeMappingSerializer, \
+    FyleFieldsSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -451,3 +452,15 @@ class DestinationAttributesView(LookupFieldMixin, ListAPIView):
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = {'attribute_type': {'exact', 'in'}, 'display_name': {'exact', 'in'}, 'active': {'exact'}}
     ordering_fields = ('value',)
+
+
+class FyleFieldsView(ListAPIView):
+    """
+    Fyle Fields view
+    """
+
+    serializer_class = FyleFieldsSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        return FyleFieldsSerializer().format_fyle_fields(self.kwargs["workspace_id"])
