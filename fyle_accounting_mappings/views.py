@@ -464,3 +464,13 @@ class FyleFieldsView(ListAPIView):
 
     def get_queryset(self):
         return FyleFieldsSerializer().format_fyle_fields(self.kwargs["workspace_id"])
+
+class PaginatedDestinationAttributesView(LookupFieldMixin, ListAPIView):
+    """
+    Paginated Destination Attributes view
+    """
+    queryset = DestinationAttribute.objects.filter(active=True)
+    serializer_class = DestinationAttributeSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = {'attribute_type': {'exact', 'in'}, 'display_name': {'exact', 'in'}, 'value': {'icontains'}}
+    ordering_fields = ('value',)
