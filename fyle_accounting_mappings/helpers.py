@@ -1,7 +1,11 @@
+from functools import reduce
 from typing import List
+from django.db.models import Q
 
 from .models import EmployeeMapping, DestinationAttribute, ExpenseAttribute
+import django_filters
 
+import operator
 
 class EmployeesAutoMappingHelper:
     """
@@ -283,3 +287,18 @@ class EmployeesAutoMappingHelper:
             EmployeeMapping.objects.bulk_update(
                 mapping_updation_batch, fields=['destination_card_account_id'], batch_size=50
             )
+
+
+class ExpenseAttributeFilter(django_filters.FilterSet):
+    mapping_source_alphabets = django_filters.CharFilter(method='filter_mapping_source_alphabets')
+    value = django_filters.CharFilter(field_name='value', lookup_expr='startswith')
+
+    def filter_mapping_source_alphabets(self, queryset, name, value):
+        if value:
+            alphabets = value.split(',')
+            queryset = queryset.filter(reduce(operator.or_, (Q(value__istartswith=x) for x in alphabets)))
+        return queryset
+
+    class Meta:
+        model = ExpenseAttribute
+        fields = ['mapping_source_alphabets', 'value']

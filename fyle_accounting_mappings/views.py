@@ -19,6 +19,8 @@ from .serializers import ExpenseAttributeMappingSerializer, MappingSettingSerial
     EmployeeAttributeMappingSerializer, ExpenseFieldSerializer, CategoryAttributeMappingSerializer, \
     FyleFieldsSerializer
 
+from .helpers import ExpenseAttributeFilter
+
 logger = logging.getLogger(__name__)
 
 
@@ -255,31 +257,14 @@ class MappingStatsView(ListCreateAPIView):
 
 
 class ExpenseAttributesMappingView(ListAPIView):
-    """
-    Expense Attributes Mapping View
-    """
     serializer_class = ExpenseAttributeMappingSerializer
-
-    def filter_expense_attributes_with_additional_filters(self, filters, mapping_source_alphabets, param=None):
-        final_filter = Q(**filters)
-
-        if mapping_source_alphabets:
-            final_filter = final_filter & reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets))
-
-        if param:
-            final_filter = final_filter & param
-
-        return ExpenseAttribute.objects.filter(final_filter).order_by('value').all()
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = ExpenseAttributeFilter
 
     def get_queryset(self):
-        source_type = self.request.query_params.get('source_type')
-        destination_type = self.request.query_params.get('destination_type')
         mapped = self.request.query_params.get('mapped')
-        mapping_source_alphabets = self.request.query_params.get('mapping_source_alphabets', '')
-        mapping_source_alphabets = mapping_source_alphabets.split(',')
-
-        assert_valid(source_type is not None, 'query param source_type not found')
-        assert_valid(destination_type is not None, 'query param source_type not found')
+        source_type = self.request.query_params.get('source_type')
+        destination_type = self.request.query_params.get('destination_type', '')
 
         if mapped and mapped.lower() == 'false':
             mapped = False
@@ -303,10 +288,12 @@ class ExpenseAttributesMappingView(ListAPIView):
         elif mapped is False:
             param = ~Q(mapping__destination_type=destination_type)
         else:
-            return self.filter_expense_attributes_with_additional_filters(filters, mapping_source_alphabets)
-
-        return self.filter_expense_attributes_with_additional_filters(filters, mapping_source_alphabets, param)
-
+            return ExpenseAttribute.objects.filter(Q(**filters))
+        
+        final_filter = Q(**filters)
+        if param:
+            final_filter = final_filter & param
+        return ExpenseAttribute.objects.filter(final_filter)
 
 
 class CategoryAttributesMappingView(ListAPIView):
@@ -314,27 +301,11 @@ class CategoryAttributesMappingView(ListAPIView):
     Category Mapping View
     """
     serializer_class = CategoryAttributeMappingSerializer
-
-    def filter_expense_attributes_with_additional_filters(self, workspace_id, mapping_source_alphabets, param=None):
-        filters = {
-            'workspace_id' : workspace_id,
-            'attribute_type': 'CATEGORY',
-            'active': True
-        }
-        final_filter = Q(**filters)
-
-        if mapping_source_alphabets:
-            final_filter = final_filter & reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets))
-
-        if param:
-            final_filter = final_filter & param
-
-        return ExpenseAttribute.objects.filter(final_filter).order_by('value').all()
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = ExpenseAttributeFilter
 
     def get_queryset(self):
         mapped = self.request.query_params.get('mapped')
-        mapping_source_alphabets = self.request.query_params.get('mapping_source_alphabets', '')
-        mapping_source_alphabets = mapping_source_alphabets.split(',')
         destination_type = self.request.query_params.get('destination_type', '')
 
         if mapped and mapped.lower() == 'false':
@@ -357,44 +328,33 @@ class CategoryAttributesMappingView(ListAPIView):
             workspace_id=self.kwargs['workspace_id'],
         ).values_list('source_category_id', flat=True)
 
+        filters = {
+            'workspace_id' : self.kwargs['workspace_id'],
+            'attribute_type': 'CATEGORY',
+            'active': True
+        }
+
         param = None
         if mapped:
             param = Q(categorymapping__source_category_id__in=source_categories)
         elif mapped is False:
             param = ~Q(categorymapping__source_category_id__in=source_categories)
         else:
-            return self.filter_expense_attributes_with_additional_filters(self.kwargs['workspace_id'], mapping_source_alphabets)
-
-        return self.filter_expense_attributes_with_additional_filters(
-            self.kwargs['workspace_id'], mapping_source_alphabets, param
-        )
-
-
-class EmployeeAttributesMappingView(ListAPIView):
-    """
-    Expense Attributes Mapping View
-    """
-    serializer_class = EmployeeAttributeMappingSerializer
-
-    def filter_expense_attributes_with_additional_filters(self, workspace_id, mapping_source_alphabets, param=None):
-        filters = {
-            'workspace_id' : workspace_id,
-            'attribute_type': 'EMPLOYEE'
-        }
+           return ExpenseAttribute.objects.filter(Q(**filters))
+        
         final_filter = Q(**filters)
-
-        if mapping_source_alphabets:
-            final_filter = final_filter & reduce(operator.or_, (Q(value__istartswith=x) for x in mapping_source_alphabets))
-
         if param:
             final_filter = final_filter & param
+        return ExpenseAttribute.objects.filter(final_filter)
 
-        return ExpenseAttribute.objects.filter(final_filter).order_by('value').all()
+class EmployeeAttributesMappingView(ListAPIView):
+
+    serializer_class = EmployeeAttributeMappingSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = ExpenseAttributeFilter
 
     def get_queryset(self):
         mapped = self.request.query_params.get('mapped')
-        mapping_source_alphabets = self.request.query_params.get('mapping_source_alphabets', '')
-        mapping_source_alphabets = mapping_source_alphabets.split(',')
         destination_type = self.request.query_params.get('destination_type', '')
 
         if mapped and mapped.lower() == 'false':
@@ -416,17 +376,23 @@ class EmployeeAttributesMappingView(ListAPIView):
             workspace_id=self.kwargs['workspace_id'],
         ).values_list('source_employee_id', flat=True)
 
+        filters = {
+            'workspace_id' : self.kwargs['workspace_id'],
+            'attribute_type': 'EMPLOYEE'
+        }
+
         param = None
         if mapped:
             param = Q(employeemapping__source_employee_id__in=source_employees)
         elif mapped is False:
             param = ~Q(employeemapping__source_employee_id__in=source_employees)
         else:
-            return self.filter_expense_attributes_with_additional_filters(self.kwargs['workspace_id'], mapping_source_alphabets)
-
-        return self.filter_expense_attributes_with_additional_filters(
-            self.kwargs['workspace_id'], mapping_source_alphabets, param
-        )
+            return ExpenseAttribute.objects.filter(Q(**filters))
+        
+        final_filter = Q(**filters)
+        if param:
+            final_filter = final_filter & param
+        return ExpenseAttribute.objects.filter(final_filter)
 
 
 class ExpenseFieldView(ListAPIView):
