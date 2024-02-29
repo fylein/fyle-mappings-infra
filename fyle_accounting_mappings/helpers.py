@@ -2,10 +2,10 @@ from functools import reduce
 from typing import List
 from django.db.models import Q
 
-from .models import EmployeeMapping, DestinationAttribute, ExpenseAttribute
 import django_filters
-
 import operator
+
+from .models import EmployeeMapping, DestinationAttribute, ExpenseAttribute
 
 class EmployeesAutoMappingHelper:
     """

@@ -1,6 +1,4 @@
 import logging
-import operator
-from functools import reduce
 from typing import Dict, List
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -289,7 +287,6 @@ class ExpenseAttributesMappingView(ListAPIView):
             param = ~Q(mapping__destination_type=destination_type)
         else:
             return ExpenseAttribute.objects.filter(Q(**filters))
-        
         final_filter = Q(**filters)
         if param:
             final_filter = final_filter & param
@@ -340,8 +337,7 @@ class CategoryAttributesMappingView(ListAPIView):
         elif mapped is False:
             param = ~Q(categorymapping__source_category_id__in=source_categories)
         else:
-           return ExpenseAttribute.objects.filter(Q(**filters))
-        
+            return ExpenseAttribute.objects.filter(Q(**filters))
         final_filter = Q(**filters)
         if param:
             final_filter = final_filter & param
@@ -388,7 +384,6 @@ class EmployeeAttributesMappingView(ListAPIView):
             param = ~Q(employeemapping__source_employee_id__in=source_employees)
         else:
             return ExpenseAttribute.objects.filter(Q(**filters))
-        
         final_filter = Q(**filters)
         if param:
             final_filter = final_filter & param
