@@ -293,12 +293,11 @@ class EmployeesAutoMappingHelper:
 
 class ExpenseAttributeFilter(django_filters.FilterSet):
     mapping_source_alphabets = django_filters.CharFilter(method='filter_mapping_source_alphabets')
-    value = django_filters.CharFilter(field_name='value', lookup_expr='startswith')
+    value = django_filters.CharFilter(field_name='value', lookup_expr='icontains')
 
     def filter_mapping_source_alphabets(self, queryset, name, value):
         if value:
-            alphabets = value.split(',')
-            queryset = queryset.filter(reduce(operator.or_, (Q(value__istartswith=x) for x in alphabets)))
+            queryset = queryset.filter(Q(value__istartswith=value))
         return queryset
 
     class Meta:
