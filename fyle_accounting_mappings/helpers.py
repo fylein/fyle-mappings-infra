@@ -1,9 +1,11 @@
 from functools import reduce
 from typing import List
+import operator
+
 from django.db.models import Q
 
 import django_filters
-import operator
+
 
 from .models import EmployeeMapping, DestinationAttribute, ExpenseAttribute
 
