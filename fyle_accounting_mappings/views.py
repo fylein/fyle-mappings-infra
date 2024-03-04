@@ -286,11 +286,11 @@ class ExpenseAttributesMappingView(ListAPIView):
         elif mapped is False:
             param = ~Q(mapping__destination_type=destination_type)
         else:
-            return ExpenseAttribute.objects.filter(Q(**filters))
+            return ExpenseAttribute.objects.filter(Q(**filters)).order_by('value')
         final_filter = Q(**filters)
         if param:
             final_filter = final_filter & param
-        return ExpenseAttribute.objects.filter(final_filter)
+        return ExpenseAttribute.objects.filter(final_filter).order_by('value')
 
 
 class CategoryAttributesMappingView(ListAPIView):
@@ -337,11 +337,11 @@ class CategoryAttributesMappingView(ListAPIView):
         elif mapped is False:
             param = ~Q(categorymapping__source_category_id__in=source_categories)
         else:
-            return ExpenseAttribute.objects.filter(Q(**filters))
+            return ExpenseAttribute.objects.filter(Q(**filters)).order_by('value')
         final_filter = Q(**filters)
         if param:
             final_filter = final_filter & param
-        return ExpenseAttribute.objects.filter(final_filter)
+        return ExpenseAttribute.objects.filter(final_filter).order_by('value')
 
 class EmployeeAttributesMappingView(ListAPIView):
 
@@ -383,11 +383,11 @@ class EmployeeAttributesMappingView(ListAPIView):
         elif mapped is False:
             param = ~Q(employeemapping__source_employee_id__in=source_employees)
         else:
-            return ExpenseAttribute.objects.filter(Q(**filters))
+            return ExpenseAttribute.objects.filter(Q(**filters)).order_by('value')
         final_filter = Q(**filters)
         if param:
             final_filter = final_filter & param
-        return ExpenseAttribute.objects.filter(final_filter)
+        return ExpenseAttribute.objects.filter(final_filter).order_by('value')
 
 
 class ExpenseFieldView(ListAPIView):
