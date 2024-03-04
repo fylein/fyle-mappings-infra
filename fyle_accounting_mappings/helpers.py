@@ -1,6 +1,4 @@
-from functools import reduce
 from typing import List
-import operator
 
 from django.db.models import Q
 
