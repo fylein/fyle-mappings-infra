@@ -188,7 +188,7 @@ class ExpenseAttribute(models.Model):
                     updated_at=datetime.now()
                 )
             )
-            
+
         if attributes_to_be_updated:
             ExpenseAttribute.objects.bulk_update(
                 attributes_to_be_updated, fields=['active', 'updated_at'], batch_size=50)
