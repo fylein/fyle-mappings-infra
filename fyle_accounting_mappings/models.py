@@ -182,12 +182,12 @@ class ExpenseAttribute(models.Model):
 
         for attribute in deleted_attributes:
             attributes_to_be_updated.append(
-                    ExpenseAttribute(
-                        id=attribute.id,
-                        active=False,
-                        updated_at=datetime.now()
-                    )
+                ExpenseAttribute(
+                    id=attribute.id,
+                    active=False,
+                    updated_at=datetime.now()
                 )
+            )
             
         if attributes_to_be_updated:
             ExpenseAttribute.objects.bulk_update(
