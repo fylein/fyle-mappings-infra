@@ -282,8 +282,7 @@ class ExpenseAttributesMappingView(ListAPIView):
             'attribute_type': source_type,
         }
 
-        if ((source_type == 'PROJECT' and destination_type == 'CUSTOMER') or\
-            (source_type == 'CATEGORY')):
+        if source_type in ('PROJECT', 'CATEGORY'):
             filters['active'] = True
 
         param = None
