@@ -8,7 +8,6 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('workspaces', '0038_alter_workspace_onboarding_state'),
         ('fyle_accounting_mappings', '0024_auto_20230922_0819'),
     ]
 
