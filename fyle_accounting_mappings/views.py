@@ -219,7 +219,7 @@ class MappingStatsView(ListCreateAPIView):
                 mapped_attributes_count = EmployeeMapping.objects.filter(
                     **filters, workspace_id=self.kwargs['workspace_id']
                 ).count()
-        elif source_type == 'CATEGORY' and app_name in ['INTACCT', 'Sage 300 CRE', 'Dynamics 365 Business Central']:
+        elif source_type == 'CATEGORY' and app_name in ['INTACCT', 'Sage 300 CRE', 'Dynamics 365 Business Central', 'NetSuite']:
             filters = {}
 
             if destination_type == 'ACCOUNT':
