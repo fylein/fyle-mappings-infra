@@ -433,8 +433,7 @@ class PaginatedDestinationAttributesView(LookupFieldMixin, ListAPIView):
     """
     Paginated Destination Attributes view
     """
-    queryset = DestinationAttribute.objects.filter(active=True)
+    queryset = DestinationAttribute.objects.filter(active=True).order_by('value')
     serializer_class = DestinationAttributeSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = {'attribute_type': {'exact', 'in'}, 'display_name': {'exact', 'in'}, 'value': {'icontains'}}
-    ordering_fields = ('value',)
