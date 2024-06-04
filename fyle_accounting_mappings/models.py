@@ -1,6 +1,7 @@
 import importlib
 from typing import List, Dict
 from datetime import datetime
+from django.utils.module_loading import import_string
 from django.db import models, transaction
 from django.db.models import JSONField
 from django.contrib.postgres.fields import ArrayField
@@ -318,7 +319,13 @@ class DestinationAttribute(models.Model):
 
     @staticmethod
     def bulk_create_or_update_destination_attributes(
-            attributes: List[Dict], attribute_type: str, workspace_id: int, update: bool = False, display_name: str = None):
+            attributes: List[Dict],
+            attribute_type: str,
+            workspace_id: int,
+            update: bool = False,
+            display_name: str = None,
+            project_disable_callback_path: str = None,
+    ):
         """
         Create Destination Attributes in bulk
         :param update: Update Pre-existing records or not
@@ -331,6 +338,7 @@ class DestinationAttribute(models.Model):
             'detail': Extra Details of the attribute
         }]
         :param workspace_id: Workspace Id
+        :param project_disable_callback_path: API func to call when project is to be disabled
         :return: created / updated attributes
         """
         attribute_destination_id_list = [attribute['destination_id'] for attribute in attributes]
@@ -361,6 +369,7 @@ class DestinationAttribute(models.Model):
 
         attributes_to_be_created = []
         attributes_to_be_updated = []
+        projects_to_disable = {}
 
         destination_ids_appended = []
         for attribute in attributes:
@@ -379,13 +388,17 @@ class DestinationAttribute(models.Model):
                     )
                 )
             else:
-                if update and(
+                if project_disable_callback_path and attribute['value'] != primary_key_map[attribute['destination_id']]['value']:
+                    projects_to_disable[attribute['destination_id']] = {
+                        'value': primary_key_map[attribute['destination_id']]['value'],
+                        'updated_value': attribute['value']
+                    }
+
+                if update and (
                         (attribute['value'] != primary_key_map[attribute['destination_id']]['value'])
-                        or
-                        ('detail' in attribute and attribute['detail'] != primary_key_map[attribute['destination_id']]['detail'])
-                        or
-                        ('active' in attribute and attribute['active'] != primary_key_map[attribute['destination_id']]['active'])
-                    ):
+                        or ('detail' in attribute and attribute['detail'] != primary_key_map[attribute['destination_id']]['detail'])
+                        or ('active' in attribute and attribute['active'] != primary_key_map[attribute['destination_id']]['active'])
+                ):
                     attributes_to_be_updated.append(
                         DestinationAttribute(
                             id=primary_key_map[attribute['destination_id']]['id'],
@@ -395,6 +408,10 @@ class DestinationAttribute(models.Model):
                             updated_at=datetime.now()
                         )
                     )
+
+        if project_disable_callback_path and projects_to_disable:
+            import_string(project_disable_callback_path)(workspace_id, projects_to_disable)
+
         if attributes_to_be_created:
             DestinationAttribute.objects.bulk_create(attributes_to_be_created, batch_size=50)
 
