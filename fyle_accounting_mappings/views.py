@@ -415,7 +415,6 @@ class DestinationAttributesView(LookupFieldMixin, ListAPIView):
     pagination_class = None
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = {'attribute_type': {'exact', 'in'}, 'display_name': {'exact', 'in'}, 'active': {'exact'}}
-    ordering_fields = ('value',)
 
 
 class FyleFieldsView(ListAPIView):
