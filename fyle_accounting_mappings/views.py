@@ -410,12 +410,11 @@ class DestinationAttributesView(LookupFieldMixin, ListAPIView):
     Destination Attributes view
     """
 
-    queryset = DestinationAttribute.objects.all()
+    queryset = DestinationAttribute.objects.all().order_by('value')
     serializer_class = DestinationAttributeSerializer
     pagination_class = None
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = {'attribute_type': {'exact', 'in'}, 'display_name': {'exact', 'in'}, 'active': {'exact'}}
-    ordering_fields = ('value',)
 
 
 class FyleFieldsView(ListAPIView):
