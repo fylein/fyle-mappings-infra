@@ -314,7 +314,7 @@ class DestinationAttribute(models.Model):
                 'display_name': attribute['display_name'],
                 'value': attribute['value'],
                 'detail': attribute['detail'] if 'detail' in attribute else None,
-                'code': "".join(attribute['code'].split()) if 'code' in attribute else None
+                'code': " ".join(attribute['code'].split()) if 'code' in attribute and attribute['code'] else None
             }
         )
         return destination_attribute
@@ -388,7 +388,7 @@ class DestinationAttribute(models.Model):
                         detail=attribute['detail'] if 'detail' in attribute else None,
                         workspace_id=workspace_id,
                         active=attribute['active'] if 'active' in attribute else None,
-                        code="".join(attribute['code'].split()) if 'code' in attribute else None
+                        code=" ".join(attribute['code'].split()) if 'code' in attribute and attribute['code'] else None
                     )
                 )
             else:
@@ -415,7 +415,7 @@ class DestinationAttribute(models.Model):
                             value=attribute['value'],
                             detail=attribute['detail'] if 'detail' in attribute else None,
                             active=attribute['active'] if 'active' in attribute else None,
-                            code="".join(attribute['code'].split()) if 'code' in attribute else None,
+                            code=" ".join(attribute['code'].split()) if 'code' in attribute and attribute['code'] else None,
                             updated_at=datetime.now()
                         )
                     )
