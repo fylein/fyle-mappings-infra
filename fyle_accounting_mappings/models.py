@@ -393,8 +393,8 @@ class DestinationAttribute(models.Model):
                 )
             else:
                 if attribute_disable_callback_path and (
-                    attribute['value'] != primary_key_map[attribute['destination_id']]['value']
-                    or attribute['code'] != primary_key_map[attribute['destination_id']]['code']
+                    (attribute['value'] != primary_key_map[attribute['destination_id']]['value'])
+                    or ('code' in attribute and attribute['code'] != primary_key_map[attribute['destination_id']]['code'])
                 ):
                     attributes_to_disable[attribute['destination_id']] = {
                         'value': primary_key_map[attribute['destination_id']]['value'],
