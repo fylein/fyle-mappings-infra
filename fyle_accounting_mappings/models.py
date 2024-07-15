@@ -292,6 +292,7 @@ class DestinationAttribute(models.Model):
                                        help_text='Indicates whether the field is auto created by the integration')
     active = models.BooleanField(null=True, help_text='Indicates whether the fields is active or not')
     detail = JSONField(help_text='Detailed destination attributes payload', null=True)
+    code = models.CharField(max_length=255, help_text='Code of the attribute', null=True)
     created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
     updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
 
@@ -312,7 +313,8 @@ class DestinationAttribute(models.Model):
                 'active': attribute['active'] if 'active' in attribute else None,
                 'display_name': attribute['display_name'],
                 'value': attribute['value'],
-                'detail': attribute['detail'] if 'detail' in attribute else None
+                'detail': attribute['detail'] if 'detail' in attribute else None,
+                'code': "".join(attribute['code'].split()) if 'code' in attribute else None
             }
         )
         return destination_attribute
@@ -324,7 +326,7 @@ class DestinationAttribute(models.Model):
             workspace_id: int,
             update: bool = False,
             display_name: str = None,
-            project_disable_callback_path: str = None,
+            attribute_disable_callback_path: str = None,
     ):
         """
         Create Destination Attributes in bulk
@@ -338,7 +340,7 @@ class DestinationAttribute(models.Model):
             'detail': Extra Details of the attribute
         }]
         :param workspace_id: Workspace Id
-        :param project_disable_callback_path: API func to call when project is to be disabled
+        :param attributes_disable_callback_path: API func to call when attribute is to be disabled
         :return: created / updated attributes
         """
         attribute_destination_id_list = [attribute['destination_id'] for attribute in attributes]
@@ -352,7 +354,7 @@ class DestinationAttribute(models.Model):
             filters['display_name'] = display_name
 
         existing_attributes = DestinationAttribute.objects.filter(**filters)\
-            .values('id', 'value', 'destination_id', 'detail', 'active')
+            .values('id', 'value', 'destination_id', 'detail', 'active', 'code')
 
         existing_attribute_destination_ids = []
 
@@ -364,12 +366,13 @@ class DestinationAttribute(models.Model):
                 'id': existing_attribute['id'],
                 'value': existing_attribute['value'],
                 'detail': existing_attribute['detail'],
-                'active' : existing_attribute['active']
+                'active': existing_attribute['active'],
+                'code': existing_attribute['code']
             }
 
         attributes_to_be_created = []
         attributes_to_be_updated = []
-        projects_to_disable = {}
+        attributes_to_disable = {}
 
         destination_ids_appended = []
         for attribute in attributes:
@@ -384,20 +387,27 @@ class DestinationAttribute(models.Model):
                         destination_id=attribute['destination_id'],
                         detail=attribute['detail'] if 'detail' in attribute else None,
                         workspace_id=workspace_id,
-                        active=attribute['active'] if 'active' in attribute else None
+                        active=attribute['active'] if 'active' in attribute else None,
+                        code="".join(attribute['code'].split()) if 'code' in attribute else None
                     )
                 )
             else:
-                if project_disable_callback_path and attribute['value'] != primary_key_map[attribute['destination_id']]['value']:
-                    projects_to_disable[attribute['destination_id']] = {
+                if attribute_disable_callback_path and (
+                    attribute['value'] != primary_key_map[attribute['destination_id']]['value']
+                    or attribute['code'] != primary_key_map[attribute['destination_id']]['code']
+                ):
+                    attributes_to_disable[attribute['destination_id']] = {
                         'value': primary_key_map[attribute['destination_id']]['value'],
-                        'updated_value': attribute['value']
+                        'updated_value': attribute['value'],
+                        'code': primary_key_map[attribute['destination_id']]['code'],
+                        'updated_code': attribute['code']
                     }
 
                 if update and (
                         (attribute['value'] != primary_key_map[attribute['destination_id']]['value'])
                         or ('detail' in attribute and attribute['detail'] != primary_key_map[attribute['destination_id']]['detail'])
                         or ('active' in attribute and attribute['active'] != primary_key_map[attribute['destination_id']]['active'])
+                        or ('code' in attribute and attribute['code'] != primary_key_map[attribute['destination_id']]['code'])
                 ):
                     attributes_to_be_updated.append(
                         DestinationAttribute(
@@ -405,19 +415,20 @@ class DestinationAttribute(models.Model):
                             value=attribute['value'],
                             detail=attribute['detail'] if 'detail' in attribute else None,
                             active=attribute['active'] if 'active' in attribute else None,
+                            code="".join(attribute['code'].split()) if 'code' in attribute else None,
                             updated_at=datetime.now()
                         )
                     )
 
-        if project_disable_callback_path and projects_to_disable:
-            import_string(project_disable_callback_path)(workspace_id, projects_to_disable)
+        if attribute_disable_callback_path and attributes_to_disable:
+            import_string(attribute_disable_callback_path)(workspace_id, attributes_to_disable)
 
         if attributes_to_be_created:
             DestinationAttribute.objects.bulk_create(attributes_to_be_created, batch_size=50)
 
         if attributes_to_be_updated:
             DestinationAttribute.objects.bulk_update(
-                attributes_to_be_updated, fields=['detail', 'value', 'active', 'updated_at'], batch_size=50)
+                attributes_to_be_updated, fields=['detail', 'value', 'active', 'updated_at', 'code'], batch_size=50)
 
 
 class ExpenseField(models.Model):
