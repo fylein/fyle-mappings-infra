@@ -17,7 +17,7 @@ from .serializers import ExpenseAttributeMappingSerializer, MappingSettingSerial
     EmployeeAttributeMappingSerializer, ExpenseFieldSerializer, CategoryAttributeMappingSerializer, \
     FyleFieldsSerializer
 
-from .helpers import ExpenseAttributeFilter
+from .helpers import ExpenseAttributeFilter, DestinationAttributeFilter
 
 logger = logging.getLogger(__name__)
 
@@ -346,6 +346,7 @@ class CategoryAttributesMappingView(ListAPIView):
             final_filter = final_filter & param
         return ExpenseAttribute.objects.filter(final_filter).order_by('value')
 
+
 class EmployeeAttributesMappingView(ListAPIView):
 
     serializer_class = EmployeeAttributeMappingSerializer
@@ -428,6 +429,7 @@ class FyleFieldsView(ListAPIView):
     def get_queryset(self):
         return FyleFieldsSerializer().format_fyle_fields(self.kwargs["workspace_id"])
 
+
 class PaginatedDestinationAttributesView(LookupFieldMixin, ListAPIView):
     """
     Paginated Destination Attributes view
@@ -435,4 +437,4 @@ class PaginatedDestinationAttributesView(LookupFieldMixin, ListAPIView):
     queryset = DestinationAttribute.objects.filter(active=True).order_by('value')
     serializer_class = DestinationAttributeSerializer
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = {'attribute_type': {'exact', 'in'}, 'display_name': {'exact', 'in'}, 'value': {'icontains'}}
+    filterset_class = DestinationAttributeFilter

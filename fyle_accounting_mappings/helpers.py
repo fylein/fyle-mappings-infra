@@ -301,3 +301,23 @@ class ExpenseAttributeFilter(django_filters.FilterSet):
     class Meta:
         model = ExpenseAttribute
         fields = ['mapping_source_alphabets', 'value']
+
+
+class DestinationAttributeFilter(django_filters.FilterSet):
+    value = django_filters.CharFilter(method='filter_value')
+
+    class Meta:
+        model = DestinationAttribute
+        fields = {
+            'attribute_type': ['exact', 'in'],
+            'display_name': ['exact', 'in'],
+            'value': ['icontains'],
+            'code': ['icontains'],
+        }
+
+    def filter_value(self, queryset, name, value):
+        if value:
+            return queryset.filter(
+                Q(value__icontains=value) | Q(code__icontains=value)
+            )
+        return queryset
