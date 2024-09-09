@@ -394,7 +394,7 @@ class DestinationAttribute(models.Model):
                 )
             else:
                 if attribute_disable_callback_path and is_import_to_fyle_enabled and (
-                    (attribute['value'] != primary_key_map[attribute['destination_id']]['value'])
+                    (attribute['value'] and primary_key_map[attribute['destination_id']]['value'] and attribute['value'].lower() != primary_key_map[attribute['destination_id']]['value'].lower())
                     or ('code' in attribute and attribute['code'] and attribute['code'] != primary_key_map[attribute['destination_id']]['code'])
                 ):
                     attributes_to_disable[attribute['destination_id']] = {
