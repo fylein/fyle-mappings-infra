@@ -246,7 +246,12 @@ class MappingStatsView(ListCreateAPIView):
             if source_type == 'CATEGORY':
                 activity_attribute_count = ExpenseAttribute.objects.filter(
                     attribute_type='CATEGORY', value='Activity', workspace_id=self.kwargs['workspace_id'], active=True).count()
-                if activity_attribute_count:
+                activity_category_mapping = CategoryMapping.objects.filter(
+                    source_category__value='Activity', workspace_id=self.kwargs['workspace_id']).first()
+                activity_mapping = Mapping.objects.filter(
+                    source_type='CATEGORY', source___value='Activity', workspace_id=self.kwargs['workspace_id']).first()
+
+                if activity_attribute_count and not activity_category_mapping and not activity_mapping:
                     mapped_attributes_count += activity_attribute_count
 
         return Response(
