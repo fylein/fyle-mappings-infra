@@ -327,6 +327,7 @@ class DestinationAttribute(models.Model):
             update: bool = False,
             display_name: str = None,
             attribute_disable_callback_path: str = None,
+            is_import_to_fyle_enabled: bool = False
     ):
         """
         Create Destination Attributes in bulk
@@ -392,9 +393,9 @@ class DestinationAttribute(models.Model):
                     )
                 )
             else:
-                if attribute_disable_callback_path and (
-                    (attribute['value'] != primary_key_map[attribute['destination_id']]['value'])
-                    or ('code' in attribute and attribute['code'] != primary_key_map[attribute['destination_id']]['code'])
+                if attribute_disable_callback_path and is_import_to_fyle_enabled and (
+                    (attribute['value'] and primary_key_map[attribute['destination_id']]['value'] and attribute['value'].lower() != primary_key_map[attribute['destination_id']]['value'].lower())
+                    or ('code' in attribute and attribute['code'] and attribute['code'] != primary_key_map[attribute['destination_id']]['code'])
                 ):
                     attributes_to_disable[attribute['destination_id']] = {
                         'value': primary_key_map[attribute['destination_id']]['value'],
@@ -407,7 +408,7 @@ class DestinationAttribute(models.Model):
                         (attribute['value'] != primary_key_map[attribute['destination_id']]['value'])
                         or ('detail' in attribute and attribute['detail'] != primary_key_map[attribute['destination_id']]['detail'])
                         or ('active' in attribute and attribute['active'] != primary_key_map[attribute['destination_id']]['active'])
-                        or ('code' in attribute and attribute['code'] != primary_key_map[attribute['destination_id']]['code'])
+                        or ('code' in attribute and attribute['code'] and attribute['code'] != primary_key_map[attribute['destination_id']]['code'])
                 ):
                     attributes_to_be_updated.append(
                         DestinationAttribute(
@@ -421,7 +422,7 @@ class DestinationAttribute(models.Model):
                     )
 
         if attribute_disable_callback_path and attributes_to_disable:
-            import_string(attribute_disable_callback_path)(workspace_id, attributes_to_disable)
+            import_string(attribute_disable_callback_path)(workspace_id, attributes_to_disable, is_import_to_fyle_enabled)
 
         if attributes_to_be_created:
             DestinationAttribute.objects.bulk_create(attributes_to_be_created, batch_size=50)
@@ -447,7 +448,6 @@ class ExpenseField(models.Model):
     class Meta:
         db_table = 'expense_fields'
         unique_together = ('attribute_type', 'workspace_id')
-
 
     @staticmethod
     def create_or_update_expense_fields(attributes: List[Dict], fields_included: List[str], workspace_id):
