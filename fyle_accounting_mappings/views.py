@@ -253,7 +253,7 @@ class MappingStatsView(ListCreateAPIView):
                     source_category__value='Activity', workspace_id=self.kwargs['workspace_id']).first()
             else:
                 activity_mapping = Mapping.objects.filter(
-                    source_type='CATEGORY', source___value='Activity', workspace_id=self.kwargs['workspace_id']).first()
+                    source_type='CATEGORY', source__value='Activity', workspace_id=self.kwargs['workspace_id']).first()
 
             if activity_attribute_count and not activity_mapping:
                 mapped_attributes_count += activity_attribute_count
