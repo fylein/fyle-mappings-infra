@@ -248,7 +248,7 @@ class MappingStatsView(ListCreateAPIView):
                 activity_attribute_count = ExpenseAttribute.objects.filter(
                     attribute_type='CATEGORY', value='Activity', workspace_id=self.kwargs['workspace_id'], active=True).count()
                 
-                if app_name in ('NETSUITE', 'INTACCT', 'SAGE_300_CRE', 'DYNAMICS_365_BUSINESS_CENTRAL'):
+                if app_name in ('NetSuite', 'Sage Intacct', 'Sage 300 CRE', 'Dynamics 365 Business Central'):
                     activity_mapping = CategoryMapping.objects.filter(
                         source_category__value='Activity', workspace_id=self.kwargs['workspace_id']).first()
                 else:
