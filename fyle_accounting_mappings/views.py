@@ -370,6 +370,8 @@ class CategoryAttributesMappingView(ListAPIView):
             param = Q(categorymapping__source_category_id__in=source_categories)
         elif mapped is False:
             param = ~Q(categorymapping__source_category_id__in=source_categories)
+        else:
+            return ExpenseAttribute.objects.filter(base_filters).order_by('value')
 
         # Combine the base filters with the param (if any)
         final_filter = base_filters
