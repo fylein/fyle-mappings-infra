@@ -292,15 +292,16 @@ class ExpenseAttributesMappingView(ListAPIView):
         if source_type in ('PROJECT', 'CATEGORY'):
             base_filters &= Q(active=True)
 
-        # Get the 'Activity' mapping and attribute
-        activity_mapping = Mapping.objects.filter(
-            source__value='Activity', source_type='CATEGORY', workspace_id=self.kwargs['workspace_id']).first()
-        activity_attribute = ExpenseAttribute.objects.filter(
-            attribute_type='CATEGORY', value='Activity', workspace_id=self.kwargs['workspace_id'], active=True).first()
+        # Handle Activity attribute if attribute mapping is present then show mappings else don't return Activity attribute
+        if source_type == 'CATEGORY':
+            activity_mapping = Mapping.objects.filter(
+                source__value='Activity', source_type='CATEGORY', workspace_id=self.kwargs['workspace_id']).first()
+            activity_attribute = ExpenseAttribute.objects.filter(
+                attribute_type='CATEGORY', value='Activity', workspace_id=self.kwargs['workspace_id'], active=True).first()
 
-        # Adjust the filters if 'Activity' attribute exists but not mapped
-        if activity_attribute and not activity_mapping:
-            base_filters &= ~Q(value='Activity')
+            # Adjust the filters if 'Activity' attribute exists but not mapped
+            if activity_attribute and not activity_mapping:
+                base_filters &= ~Q(value='Activity')
 
         # Handle the 'mapped' parameter
         param = None
