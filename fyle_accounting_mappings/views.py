@@ -277,6 +277,7 @@ class ExpenseAttributesMappingView(ListAPIView):
         source_type = self.request.query_params.get('source_type')
         destination_type = self.request.query_params.get('destination_type', '')
 
+        # Process the 'mapped' parameter
         if mapped and mapped.lower() == 'false':
             mapped = False
         elif mapped and mapped.lower() == 'true':
@@ -284,24 +285,39 @@ class ExpenseAttributesMappingView(ListAPIView):
         else:
             mapped = None
 
-        filters = {
-            'workspace_id' : self.kwargs['workspace_id'],
-            'attribute_type': source_type,
-        }
+        # Prepare filters for the ExpenseAttribute
+        base_filters = Q(workspace_id=self.kwargs['workspace_id']) & Q(attribute_type=source_type)
 
+        # Add 'active' filter if the source_type is 'PROJECT' or 'CATEGORY'
         if source_type in ('PROJECT', 'CATEGORY'):
-            filters['active'] = True
+            base_filters &= Q(active=True)
 
+        # Handle Activity attribute if attribute mapping is present then show mappings else don't return Activity attribute
+        if source_type == 'CATEGORY':
+            activity_mapping = Mapping.objects.filter(
+                source__value='Activity', source_type='CATEGORY', workspace_id=self.kwargs['workspace_id']).first()
+            activity_attribute = ExpenseAttribute.objects.filter(
+                attribute_type='CATEGORY', value='Activity', workspace_id=self.kwargs['workspace_id'], active=True).first()
+
+            # Adjust the filters if 'Activity' attribute exists but not mapped
+            if activity_attribute and not activity_mapping:
+                base_filters &= ~Q(value='Activity')
+
+        # Handle the 'mapped' parameter
         param = None
-        if mapped:
+        if mapped is True:
             param = Q(mapping__destination_type=destination_type)
         elif mapped is False:
             param = ~Q(mapping__destination_type=destination_type)
         else:
-            return ExpenseAttribute.objects.filter(Q(**filters)).order_by('value')
-        final_filter = Q(**filters)
+            return ExpenseAttribute.objects.filter(base_filters).order_by('value')
+
+        # Combine the base filters with the param (if any)
+        final_filter = base_filters
         if param:
-            final_filter = final_filter & param
+            final_filter &= param
+
+        # Return the final queryset
         return ExpenseAttribute.objects.filter(final_filter).order_by('value')
 
 
@@ -317,6 +333,7 @@ class CategoryAttributesMappingView(ListAPIView):
         mapped = self.request.query_params.get('mapped')
         destination_type = self.request.query_params.get('destination_type', '')
 
+        # Process the 'mapped' parameter
         if mapped and mapped.lower() == 'false':
             mapped = False
         elif mapped and mapped.lower() == 'true':
@@ -324,6 +341,7 @@ class CategoryAttributesMappingView(ListAPIView):
         else:
             mapped = None
 
+        # Prepare filters based on destination_type
         filters = {}
 
         if destination_type == 'ACCOUNT':
@@ -331,28 +349,43 @@ class CategoryAttributesMappingView(ListAPIView):
         else:
             filters['destination_expense_head__attribute_type'] = destination_type
 
+        # Get source categories
         source_categories = CategoryMapping.objects.filter(
             **filters,
             source_category__active=True,
             workspace_id=self.kwargs['workspace_id'],
         ).values_list('source_category_id', flat=True)
 
-        filters = {
-            'workspace_id' : self.kwargs['workspace_id'],
-            'attribute_type': 'CATEGORY',
-            'active': True
-        }
+        # Prepare filters for ExpenseAttribute
+        base_filters = Q(workspace_id=self.kwargs['workspace_id']) & \
+                       Q(attribute_type='CATEGORY') & \
+                       Q(active=True)
 
+        # Get the 'Activity' mapping and attribute
+        activity_mapping = CategoryMapping.objects.filter(
+            source_category__value='Activity', workspace_id=self.kwargs['workspace_id']).first()
+        activity_attribute = ExpenseAttribute.objects.filter(
+            attribute_type='CATEGORY', value='Activity', workspace_id=self.kwargs['workspace_id'], active=True).first()
+
+        # Adjust the filters if 'Activity' attribute exists but not mapped
+        if activity_attribute and not activity_mapping:
+            base_filters &= ~Q(value='Activity')
+
+        # Handle the mapped parameter
         param = None
-        if mapped:
+        if mapped is True:
             param = Q(categorymapping__source_category_id__in=source_categories)
         elif mapped is False:
             param = ~Q(categorymapping__source_category_id__in=source_categories)
         else:
-            return ExpenseAttribute.objects.filter(Q(**filters)).order_by('value')
-        final_filter = Q(**filters)
+            return ExpenseAttribute.objects.filter(base_filters).order_by('value')
+
+        # Combine the base filters with the param (if any)
+        final_filter = base_filters
         if param:
-            final_filter = final_filter & param
+            final_filter &= param
+
+        # Return the final queryset
         return ExpenseAttribute.objects.filter(final_filter).order_by('value')
 
 
