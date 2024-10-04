@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import status
 from django.db.models import Count, Q
 
-from .utils import LookupFieldMixin
+from .utils import LookupFieldMixin, JSONFieldFilterBackend
 from .exceptions import BulkError
 from .utils import assert_valid
 from .models import MappingSetting, Mapping, ExpenseAttribute, DestinationAttribute, EmployeeMapping, \
@@ -194,7 +194,7 @@ class MappingStatsView(ListCreateAPIView):
         assert_valid(destination_type is not None, 'query param destination_type not found')
 
         filters = {
-            'attribute_type' : source_type,
+            'attribute_type': source_type,
             'workspace_id': self.kwargs['workspace_id']
         }
 
@@ -234,8 +234,8 @@ class MappingStatsView(ListCreateAPIView):
             ).count()
         else:
             filters = {
-                'source_type' : source_type,
-                'destination_type' : destination_type,
+                'source_type': source_type,
+                'destination_type': destination_type,
                 'workspace_id': self.kwargs['workspace_id']
             }
             if source_type in ('PROJECT', 'CATEGORY'):
@@ -358,8 +358,8 @@ class CategoryAttributesMappingView(ListAPIView):
 
         # Prepare filters for ExpenseAttribute
         base_filters = Q(workspace_id=self.kwargs['workspace_id']) & \
-                       Q(attribute_type='CATEGORY') & \
-                       Q(active=True)
+            Q(attribute_type='CATEGORY') & \
+            Q(active=True)
 
         # Get the 'Activity' mapping and attribute
         activity_mapping = CategoryMapping.objects.filter(
@@ -419,7 +419,7 @@ class EmployeeAttributesMappingView(ListAPIView):
         ).values_list('source_employee_id', flat=True)
 
         filters = {
-            'workspace_id' : self.kwargs['workspace_id'],
+            'workspace_id': self.kwargs['workspace_id'],
             'attribute_type': 'EMPLOYEE'
         }
 
@@ -456,7 +456,7 @@ class DestinationAttributesView(LookupFieldMixin, ListAPIView):
     queryset = DestinationAttribute.objects.all().order_by('value')
     serializer_class = DestinationAttributeSerializer
     pagination_class = None
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, JSONFieldFilterBackend,)
     filterset_fields = {'attribute_type': {'exact', 'in'}, 'display_name': {'exact', 'in'}, 'active': {'exact'}}
 
 
@@ -478,5 +478,5 @@ class PaginatedDestinationAttributesView(LookupFieldMixin, ListAPIView):
     """
     queryset = DestinationAttribute.objects.filter(active=True).order_by('value')
     serializer_class = DestinationAttributeSerializer
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, JSONFieldFilterBackend,)
     filterset_class = DestinationAttributeFilter
