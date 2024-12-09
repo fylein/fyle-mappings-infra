@@ -702,7 +702,7 @@ class EmployeeMapping(models.Model):
     """
     id = models.AutoField(primary_key=True)
     source_employee = models.ForeignKey(
-        ExpenseAttribute, on_delete=models.PROTECT, related_name='employeemapping')
+        ExpenseAttribute, on_delete=models.PROTECT, related_name='employeemapping', unique=True)
     destination_employee = models.ForeignKey(
         DestinationAttribute, on_delete=models.PROTECT, null=True, related_name='destination_employee')
     destination_vendor = models.ForeignKey(
