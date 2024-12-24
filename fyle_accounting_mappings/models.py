@@ -436,14 +436,13 @@ class DestinationAttribute(models.Model):
                         'code': primary_key_map['destination_id']['code'],
                         'updated_code': attribute['code']
                     }
-    
+
                 condition = (
-                    (attribute['value'] !=
-                         primary_key_map[attribute['destination_id']]['value'])
+                    (attribute['value'] != primary_key_map[attribute['destination_id']]['value'])
                     or ('detail' in attribute and attribute['detail'] != primary_key_map[attribute['destination_id']]['detail'])
                     or ('active' in attribute and attribute['active'] != primary_key_map[attribute['destination_id']]['active'])
                     or ('code' in attribute and attribute['code'] and
-                            attribute['code'] != primary_key_map[attribute['destination_id']]['code'])
+                        attribute['code'] != primary_key_map[attribute['destination_id']]['code'])
                     )
 
                 if update and condition:
