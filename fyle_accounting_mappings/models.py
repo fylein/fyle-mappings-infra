@@ -1,5 +1,5 @@
 import importlib
-from typing import Iterable, List, Dict
+from typing import List, Dict
 from datetime import datetime
 from django.utils.module_loading import import_string
 from django.db import models, transaction
