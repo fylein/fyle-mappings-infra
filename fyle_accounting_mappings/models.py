@@ -890,7 +890,7 @@ class CategoryMapping(models.Model):
             )
 
 
-class AutoUserTrackManager(models.Manager):
+class AutoAddCreateUpdateInfoManager(models.Manager):
     def update_or_create(self, defaults=None, **kwargs):
         """
         Overrides the default update_or_create to handle 'user' keyword argument.
@@ -909,7 +909,7 @@ class AutoUserTrackManager(models.Manager):
         
         return instance, created
 
-class AutoUserTrackModelMixin(models.Model):
+class AutoAddCreateUpdateInfoMixin(models.Model):
     """
     Mixin to automatically set created_by and updated_by fields.
     Stores only the user's email.
@@ -927,7 +927,7 @@ class AutoUserTrackModelMixin(models.Model):
         help_text="Email of the user who last updated this record"
     )
 
-    objects = AutoUserTrackManager()
+    objects = AutoAddCreateUpdateInfoManager()
 
     class Meta:
         abstract = True
