@@ -436,15 +436,15 @@ class DestinationAttribute(models.Model):
                         'code': primary_key_map['destination_id']['code'],
                         'updated_code': attribute['code']
                     }
-                
+    
                 condition = (
-                        (attribute['value'] !=
+                    (attribute['value'] !=
                          primary_key_map[attribute['destination_id']]['value'])
-                        or ('detail' in attribute and attribute['detail'] != primary_key_map[attribute['destination_id']]['detail'])
-                        or ('active' in attribute and attribute['active'] != primary_key_map[attribute['destination_id']]['active'])
-                        or ('code' in attribute and attribute['code'] and
+                    or ('detail' in attribute and attribute['detail'] != primary_key_map[attribute['destination_id']]['detail'])
+                    or ('active' in attribute and attribute['active'] != primary_key_map[attribute['destination_id']]['active'])
+                    or ('code' in attribute and attribute['code'] and
                             attribute['code'] != primary_key_map[attribute['destination_id']]['code'])
-                        )
+                    )
 
                 if update and condition:
                     attributes_to_be_updated.append(
@@ -1018,7 +1018,8 @@ class AutoAddCreateUpdateInfoMixin(models.Model):
     class Meta:
         abstract = True
 
-    def save(self, force_insert: bool = False, force_update: bool = False, using: str | None = None, update_fields: Iterable[str] | None = None, **kwargs,) -> None:
+    def save(self, force_insert: bool = False, force_update: bool = False, using: str | None=None,
+             update_fields: Iterable[str] | None=None, **kwargs,) -> None:
         """
         Override the save method to set created_by and updated_by fields.
         Expects a 'user' keyword argument containing the user instance.
