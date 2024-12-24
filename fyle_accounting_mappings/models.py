@@ -1018,7 +1018,7 @@ class AutoAddCreateUpdateInfoMixin(models.Model):
         abstract = True
 
     def save(self, force_insert: bool = False, force_update: bool = False, using: str | None=None,
-             update_fields: Iterable[str] | None=None, **kwargs,) -> None:
+             update_fields: Iterable[str] | None=None, **kwargs) -> None:
         """
         Override the save method to set created_by and updated_by fields.
         Expects a 'user' keyword argument containing the user instance.
