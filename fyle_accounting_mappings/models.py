@@ -1,5 +1,5 @@
 import importlib
-from typing import List, Dict
+from typing import Iterable, List, Dict
 from datetime import datetime
 from django.utils.module_loading import import_string
 from django.db import models, transaction
@@ -423,27 +423,30 @@ class DestinationAttribute(models.Model):
                     )
                 )
             else:
-                if attribute_disable_callback_path and is_import_to_fyle_enabled and (
+                condition = (
                     (attribute['value'] and primary_key_map[attribute['destination_id']]['value'] and
                      attribute['value'].lower() != primary_key_map[attribute['destination_id']]['value'].lower()) or
                     ('code' in attribute and attribute['code'] and
                      attribute['code'] != primary_key_map[attribute['destination_id']]['code'])
-                ):
+                )
+                if attribute_disable_callback_path and is_import_to_fyle_enabled and condition:
                     attributes_to_disable[attribute['destination_id']] = {
                         'value': primary_key_map['destination_id']['value'],
                         'updated_value': attribute['value'],
                         'code': primary_key_map['destination_id']['code'],
                         'updated_code': attribute['code']
                     }
-
-                if update and (
+                
+                condition = (
                         (attribute['value'] !=
                          primary_key_map[attribute['destination_id']]['value'])
                         or ('detail' in attribute and attribute['detail'] != primary_key_map[attribute['destination_id']]['detail'])
                         or ('active' in attribute and attribute['active'] != primary_key_map[attribute['destination_id']]['active'])
                         or ('code' in attribute and attribute['code'] and
                             attribute['code'] != primary_key_map[attribute['destination_id']]['code'])
-                ):
+                        )
+
+                if update and condition:
                     attributes_to_be_updated.append(
                         DestinationAttribute(
                             id=primary_key_map[attribute['destination_id']]['id'],
@@ -1015,7 +1018,7 @@ class AutoAddCreateUpdateInfoMixin(models.Model):
     class Meta:
         abstract = True
 
-    def save(self, *args, **kwargs):
+    def save(self, force_insert: bool = False, force_update: bool = False, using: str | None = None, update_fields: Iterable[str] | None = None, **kwargs,) -> None:
         """
         Override the save method to set created_by and updated_by fields.
         Expects a 'user' keyword argument containing the user instance.
@@ -1025,4 +1028,9 @@ class AutoAddCreateUpdateInfoMixin(models.Model):
             if not self.pk:
                 self.created_by = user.email
             self.updated_by = user.email
-        super().save(*args, **kwargs)
+        super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
+        )
