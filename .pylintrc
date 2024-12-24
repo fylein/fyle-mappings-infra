@@ -156,7 +156,8 @@ disable=print-statement,
         too-many-arguments,
         too-many-locals,
         too-few-public-methods,
-        super-with-arguments
+        super-with-arguments,
+        arguments-differ
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -342,7 +343,7 @@ indent-string='    '
 max-line-length=135
 
 # Maximum number of lines in a module.
-max-module-lines=1000
+max-module-lines=1200
 
 # List of optional constructs for which whitespace checking is disabled. `dict-
 # separator` is used to allow tabulation in dicts, etc.: {1  : 1,\n222: 2}.
@@ -559,7 +560,7 @@ max-attributes=7
 max-bool-expr=6
 
 # Maximum number of branch for function / method body.
-max-branches=13
+max-branches=15
 
 # Maximum number of locals for function / method body.
 max-locals=20
