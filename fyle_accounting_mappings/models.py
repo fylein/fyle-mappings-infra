@@ -9,6 +9,7 @@ from django.contrib.postgres.fields import ArrayField
 from .exceptions import BulkError
 from .utils import assert_valid
 
+from .mixins import AutoAddCreateUpdateInfoMixin
 
 workspace_models = importlib.import_module("apps.workspaces.models")
 Workspace = workspace_models.Workspace
@@ -518,7 +519,7 @@ class ExpenseField(models.Model):
         return expense_fields
 
 
-class MappingSetting(models.Model):
+class MappingSetting(AutoAddCreateUpdateInfoMixin, models.Model):
     """
     Mapping Settings
     """
