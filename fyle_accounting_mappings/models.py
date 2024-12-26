@@ -971,4 +971,3 @@ class CategoryMapping(models.Model):
             CategoryMapping.objects.bulk_update(
                 mapping_updation_batch, fields=['destination_account'], batch_size=50
             )
-
