@@ -44,8 +44,7 @@ def validate_mapping_settings(mappings_settings: List[Dict]):
 def create_mappings_and_update_flag(mapping_batch: list, set_auto_mapped_flag: bool = True, **kwargs):
     model_type = kwargs['model_type'] if 'model_type' in kwargs else Mapping
     if model_type == CategoryMapping:
-        mappings = CategoryMapping.objects.bulk_create(
-            mapping_batch, batch_size=50)
+        mappings = CategoryMapping.objects.bulk_create(mapping_batch, batch_size=50)
     else:
         mappings = Mapping.objects.bulk_create(mapping_batch, batch_size=50)
 
@@ -69,8 +68,7 @@ def create_mappings_and_update_flag(mapping_batch: list, set_auto_mapped_flag: b
 
 def construct_mapping_payload(employee_source_attributes: list, employee_mapping_preference: str,
                               destination_id_value_map: dict, destination_type: str, workspace_id: int):
-    existing_source_ids = get_existing_source_ids(
-        destination_type, workspace_id)
+    existing_source_ids = get_existing_source_ids(destination_type, workspace_id)
 
     mapping_batch = []
     for source_attribute in employee_source_attributes:
@@ -113,12 +111,9 @@ def get_existing_source_ids(destination_type: str, workspace_id: int):
 
 class ExpenseAttributesDeletionCache(models.Model):
     id = models.AutoField(primary_key=True)
-    category_ids = ArrayField(
-        default=[], base_field=models.CharField(max_length=255))
-    project_ids = ArrayField(
-        default=[], base_field=models.CharField(max_length=255))
-    workspace = models.OneToOneField(
-        Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
+    category_ids = ArrayField(default=[], base_field=models.CharField(max_length=255))
+    project_ids = ArrayField(default=[], base_field=models.CharField(max_length=255))
+    workspace = models.OneToOneField(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
 
     class Meta:
         db_table = 'expense_attributes_deletion_cache'
@@ -129,27 +124,18 @@ class ExpenseAttribute(models.Model):
     Fyle Expense Attributes
     """
     id = models.AutoField(primary_key=True)
-    attribute_type = models.CharField(
-        max_length=255, help_text='Type of expense attribute')
-    display_name = models.CharField(
-        max_length=255, help_text='Display name of expense attribute')
-    value = models.CharField(
-        max_length=1000, help_text='Value of expense attribute')
+    attribute_type = models.CharField(max_length=255, help_text='Type of expense attribute')
+    display_name = models.CharField(max_length=255, help_text='Display name of expense attribute')
+    value = models.CharField(max_length=1000, help_text='Value of expense attribute')
     source_id = models.CharField(max_length=255, help_text='Fyle ID')
-    workspace = models.ForeignKey(
-        Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
-    auto_mapped = models.BooleanField(
-        default=False, help_text='Indicates whether the field is auto mapped or not')
+    workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
+    auto_mapped = models.BooleanField(default=False, help_text='Indicates whether the field is auto mapped or not')
     auto_created = models.BooleanField(default=False,
                                        help_text='Indicates whether the field is auto created by the integration')
-    active = models.BooleanField(
-        null=True, help_text='Indicates whether the fields is active or not')
-    detail = JSONField(
-        help_text='Detailed expense attributes payload', null=True)
-    created_at = models.DateTimeField(
-        auto_now_add=True, help_text='Created at datetime')
-    updated_at = models.DateTimeField(
-        auto_now=True, help_text='Updated at datetime')
+    active = models.BooleanField(null=True, help_text='Indicates whether the fields is active or not')
+    detail = JSONField(help_text='Detailed expense attributes payload', null=True)
+    created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
+    updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
 
     class Meta:
         db_table = 'expense_attributes'
@@ -180,8 +166,7 @@ class ExpenseAttribute(models.Model):
         :param attribute_type: Attribute type
         :param workspace_id: Workspace Id
         """
-        expense_attributes_deletion_cache = ExpenseAttributesDeletionCache.objects.get(
-            workspace_id=workspace_id)
+        expense_attributes_deletion_cache = ExpenseAttributesDeletionCache.objects.get(workspace_id=workspace_id)
         attributes_to_be_updated = []
 
         if attribute_type == 'CATEGORY':
@@ -274,8 +259,7 @@ class ExpenseAttribute(models.Model):
                         )
                     )
         if attributes_to_be_created:
-            ExpenseAttribute.objects.bulk_create(
-                attributes_to_be_created, batch_size=50)
+            ExpenseAttribute.objects.bulk_create(attributes_to_be_created, batch_size=50)
 
         if attributes_to_be_updated:
             ExpenseAttribute.objects.bulk_update(
@@ -300,33 +284,22 @@ class DestinationAttribute(models.Model):
     Destination Expense Attributes
     """
     id = models.AutoField(primary_key=True)
-    attribute_type = models.CharField(
-        max_length=255, help_text='Type of expense attribute')
-    display_name = models.CharField(
-        max_length=255, help_text='Display name of attribute')
-    value = models.CharField(
-        max_length=255, help_text='Value of expense attribute')
-    destination_id = models.CharField(
-        max_length=255, help_text='Destination ID')
-    workspace = models.ForeignKey(
-        Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
+    attribute_type = models.CharField(max_length=255, help_text='Type of expense attribute')
+    display_name = models.CharField(max_length=255, help_text='Display name of attribute')
+    value = models.CharField(max_length=255, help_text='Value of expense attribute')
+    destination_id = models.CharField(max_length=255, help_text='Destination ID')
+    workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
     auto_created = models.BooleanField(default=False,
                                        help_text='Indicates whether the field is auto created by the integration')
-    active = models.BooleanField(
-        null=True, help_text='Indicates whether the fields is active or not')
-    detail = JSONField(
-        help_text='Detailed destination attributes payload', null=True)
-    code = models.CharField(
-        max_length=255, help_text='Code of the attribute', null=True)
-    created_at = models.DateTimeField(
-        auto_now_add=True, help_text='Created at datetime')
-    updated_at = models.DateTimeField(
-        auto_now=True, help_text='Updated at datetime')
+    active = models.BooleanField(null=True, help_text='Indicates whether the fields is active or not')
+    detail = JSONField(help_text='Detailed destination attributes payload', null=True)
+    code = models.CharField(max_length=255, help_text='Code of the attribute', null=True)
+    created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
+    updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
 
     class Meta:
         db_table = 'destination_attributes'
-        unique_together = ('destination_id', 'attribute_type',
-                           'workspace', 'display_name')
+        unique_together = ('destination_id', 'attribute_type', 'workspace', 'display_name')
 
     @staticmethod
     def create_or_update_destination_attribute(attribute: Dict, workspace_id):
@@ -372,8 +345,7 @@ class DestinationAttribute(models.Model):
         :param attributes_disable_callback_path: API func to call when attribute is to be disabled
         :return: created / updated attributes
         """
-        attribute_destination_id_list = [
-            attribute['destination_id'] for attribute in attributes]
+        attribute_destination_id_list = [attribute['destination_id'] for attribute in attributes]
 
         filters = {
             'destination_id__in': attribute_destination_id_list,
@@ -391,8 +363,7 @@ class DestinationAttribute(models.Model):
         primary_key_map = {}
 
         for existing_attribute in existing_attributes:
-            existing_attribute_destination_ids.append(
-                existing_attribute['destination_id'])
+            existing_attribute_destination_ids.append(existing_attribute['destination_id'])
             primary_key_map[existing_attribute['destination_id']] = {
                 'id': existing_attribute['id'],
                 'value': existing_attribute['value'],
@@ -419,56 +390,43 @@ class DestinationAttribute(models.Model):
                         detail=attribute['detail'] if 'detail' in attribute else None,
                         workspace_id=workspace_id,
                         active=attribute['active'] if 'active' in attribute else None,
-                        code=" ".join(attribute['code'].split(
-                        )) if 'code' in attribute and attribute['code'] else None
+                        code=" ".join(attribute['code'].split()) if 'code' in attribute and attribute['code'] else None
                     )
                 )
             else:
-                condition = (
-                    (attribute['value'] and primary_key_map[attribute['destination_id']]['value'] and
-                     attribute['value'].lower() != primary_key_map[attribute['destination_id']]['value'].lower()) or
-                    ('code' in attribute and attribute['code'] and
-                     attribute['code'] != primary_key_map[attribute['destination_id']]['code'])
-                )
-                if attribute_disable_callback_path and is_import_to_fyle_enabled and condition:
+                if attribute_disable_callback_path and is_import_to_fyle_enabled and (
+                    (attribute['value'] and primary_key_map[attribute['destination_id']]['value'] and attribute['value'].lower() != primary_key_map[attribute['destination_id']]['value'].lower())
+                    or ('code' in attribute and attribute['code'] and attribute['code'] != primary_key_map[attribute['destination_id']]['code'])
+                ):
                     attributes_to_disable[attribute['destination_id']] = {
-                        'value': primary_key_map['destination_id']['value'],
+                        'value': primary_key_map[attribute['destination_id']]['value'],
                         'updated_value': attribute['value'],
-                        'code': primary_key_map['destination_id']['code'],
+                        'code': primary_key_map[attribute['destination_id']]['code'],
                         'updated_code': attribute['code']
                     }
 
-                condition = (
-                    (attribute['value'] != primary_key_map[attribute['destination_id']]['value'])
-                    or ('detail' in attribute and attribute['detail'] != primary_key_map[attribute['destination_id']]['detail'])
-                    or ('active' in attribute and attribute['active'] != primary_key_map[attribute['destination_id']]['active'])
-                    or ('code' in attribute and attribute['code'] and
-                        attribute['code'] != primary_key_map[attribute['destination_id']]['code'])
-                    )
-
-                if update and condition:
+                if update and (
+                        (attribute['value'] != primary_key_map[attribute['destination_id']]['value'])
+                        or ('detail' in attribute and attribute['detail'] != primary_key_map[attribute['destination_id']]['detail'])
+                        or ('active' in attribute and attribute['active'] != primary_key_map[attribute['destination_id']]['active'])
+                        or ('code' in attribute and attribute['code'] and attribute['code'] != primary_key_map[attribute['destination_id']]['code'])
+                ):
                     attributes_to_be_updated.append(
                         DestinationAttribute(
                             id=primary_key_map[attribute['destination_id']]['id'],
                             value=attribute['value'],
                             detail=attribute['detail'] if 'detail' in attribute else None,
                             active=attribute['active'] if 'active' in attribute else None,
-                            code=" ".join(attribute['code'].split(
-                            )) if 'code' in attribute and attribute['code'] else None,
+                            code=" ".join(attribute['code'].split()) if 'code' in attribute and attribute['code'] else None,
                             updated_at=datetime.now()
                         )
                     )
 
         if attribute_disable_callback_path and attributes_to_disable:
-            import_string(attribute_disable_callback_path)(
-                workspace_id,
-                attributes_to_disable,
-                is_import_to_fyle_enabled
-            )
+            import_string(attribute_disable_callback_path)(workspace_id, attributes_to_disable, is_import_to_fyle_enabled)
 
         if attributes_to_be_created:
-            DestinationAttribute.objects.bulk_create(
-                attributes_to_be_created, batch_size=50)
+            DestinationAttribute.objects.bulk_create(attributes_to_be_created, batch_size=50)
 
         if attributes_to_be_updated:
             DestinationAttribute.objects.bulk_update(
@@ -481,17 +439,12 @@ class ExpenseField(models.Model):
     """
 
     id = models.AutoField(primary_key=True)
-    attribute_type = models.CharField(
-        max_length=255, help_text='Attribute Type')
+    attribute_type = models.CharField(max_length=255, help_text='Attribute Type')
     source_field_id = models.IntegerField(help_text='Field ID')
-    workspace = models.ForeignKey(
-        Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
-    is_enabled = models.BooleanField(
-        default=False, help_text='Is the field Enabled')
-    created_at = models.DateTimeField(
-        auto_now_add=True, help_text='Created at datetime')
-    updated_at = models.DateTimeField(
-        auto_now=True, help_text='Updated at datetime')
+    workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
+    is_enabled = models.BooleanField(default=False, help_text='Is the field Enabled')
+    created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
+    updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
 
     class Meta:
         db_table = 'expense_fields'
@@ -507,8 +460,7 @@ class ExpenseField(models.Model):
         for expense_field in attributes:
             if expense_field['field_name'] in fields_included or expense_field['type'] == 'DEPENDENT_SELECT':
                 expense_fields, _ = ExpenseField.objects.update_or_create(
-                    attribute_type=expense_field['field_name'].replace(
-                        ' ', '_').upper(),
+                    attribute_type=expense_field['field_name'].replace(' ', '_').upper(),
                     workspace_id=workspace_id,
                     defaults={
                         'source_field_id': expense_field['id'],
@@ -524,16 +476,11 @@ class MappingSetting(AutoAddCreateUpdateInfoMixin, models.Model):
     Mapping Settings
     """
     id = models.AutoField(primary_key=True)
-    source_field = models.CharField(
-        max_length=255, help_text='Source mapping field')
-    destination_field = models.CharField(
-        max_length=255, help_text='Destination mapping field')
-    import_to_fyle = models.BooleanField(
-        default=False, help_text='Import to Fyle or not')
-    is_custom = models.BooleanField(
-        default=False, help_text='Custom Field or not')
-    source_placeholder = models.TextField(
-        help_text='placeholder of source field', null=True)
+    source_field = models.CharField(max_length=255, help_text='Source mapping field')
+    destination_field = models.CharField(max_length=255, help_text='Destination mapping field')
+    import_to_fyle = models.BooleanField(default=False, help_text='Import to Fyle or not')
+    is_custom = models.BooleanField(default=False, help_text='Custom Field or not')
+    source_placeholder = models.TextField(help_text='placeholder of source field', null=True)
     expense_field = models.ForeignKey(
         ExpenseField, on_delete=models.PROTECT, help_text='Reference to Expense Field model',
         related_name='expense_fields', null=True
@@ -542,10 +489,8 @@ class MappingSetting(AutoAddCreateUpdateInfoMixin, models.Model):
         Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model',
         related_name='mapping_settings'
     )
-    created_at = models.DateTimeField(
-        auto_now_add=True, help_text='Created at datetime')
-    updated_at = models.DateTimeField(
-        auto_now=True, help_text='Updated at datetime')
+    created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
+    updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
 
     class Meta:
         unique_together = ('source_field', 'destination_field', 'workspace')
@@ -583,22 +528,15 @@ class Mapping(models.Model):
     """
     id = models.AutoField(primary_key=True)
     source_type = models.CharField(max_length=255, help_text='Fyle Enum')
-    destination_type = models.CharField(
-        max_length=255, help_text='Destination Enum')
-    source = models.ForeignKey(
-        ExpenseAttribute, on_delete=models.PROTECT, related_name='mapping')
-    destination = models.ForeignKey(
-        DestinationAttribute, on_delete=models.PROTECT, related_name='mapping')
-    workspace = models.ForeignKey(
-        Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
-    created_at = models.DateTimeField(
-        auto_now_add=True, help_text='Created at datetime')
-    updated_at = models.DateTimeField(
-        auto_now=True, help_text='Updated at datetime')
+    destination_type = models.CharField(max_length=255, help_text='Destination Enum')
+    source = models.ForeignKey(ExpenseAttribute, on_delete=models.PROTECT, related_name='mapping')
+    destination = models.ForeignKey(DestinationAttribute, on_delete=models.PROTECT, related_name='mapping')
+    workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
+    created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
+    updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
 
     class Meta:
-        unique_together = ('source_type', 'source',
-                           'destination_type', 'workspace')
+        unique_together = ('source_type', 'source', 'destination_type', 'workspace')
         db_table = 'mappings'
 
     @staticmethod
@@ -617,8 +555,7 @@ class Mapping(models.Model):
 
         assert_valid(
             settings is not None and settings != [],
-            'Settings for Destination  {0} / Source {1} not found'.format(
-                destination_type, source_type)
+            'Settings for Destination  {0} / Source {1} not found'.format(destination_type, source_type)
         )
 
         mapping, _ = Mapping.objects.update_or_create(
@@ -663,8 +600,7 @@ class Mapping(models.Model):
         source_value_id_map = {}
 
         for source_attribute in source_attributes:
-            source_value_id_map[source_attribute.value.lower()
-                                ] = source_attribute.id
+            source_value_id_map[source_attribute.value.lower()] = source_attribute.id
 
         mapping_batch = []
 
@@ -674,8 +610,7 @@ class Mapping(models.Model):
                     Mapping(
                         source_type=source_type,
                         destination_type=destination_type,
-                        source_id=source_value_id_map[destination_attribute.value.lower(
-                        )],
+                        source_id=source_value_id_map[destination_attribute.value.lower()],
                         destination_id=destination_attribute.id,
                         workspace_id=workspace_id
                     )
@@ -700,15 +635,12 @@ class Mapping(models.Model):
             value_to_be_appended = None
             if employee_mapping_preference == 'EMAIL' and destination_employee.detail \
                     and destination_employee.detail['email']:
-                value_to_be_appended = destination_employee.detail['email'].replace(
-                    '*', '')
+                value_to_be_appended = destination_employee.detail['email'].replace('*', '')
             elif employee_mapping_preference in ['NAME', 'EMPLOYEE_CODE']:
-                value_to_be_appended = destination_employee.value.replace(
-                    '*', '')
+                value_to_be_appended = destination_employee.value.replace('*', '')
 
             if value_to_be_appended:
-                destination_id_value_map[value_to_be_appended.lower(
-                )] = destination_employee.id
+                destination_id_value_map[value_to_be_appended.lower()] = destination_employee.id
 
         employee_source_attributes_count = ExpenseAttribute.objects.filter(
             attribute_type='EMPLOYEE', workspace_id=workspace_id, auto_mapped=False
@@ -721,8 +653,7 @@ class Mapping(models.Model):
             paginated_employee_source_attributes = ExpenseAttribute.objects.filter(
                 attribute_type='EMPLOYEE', workspace_id=workspace_id, auto_mapped=False
             )[offset:limit]
-            employee_source_attributes.extend(
-                paginated_employee_source_attributes)
+            employee_source_attributes.extend(paginated_employee_source_attributes)
 
         mapping_batch = construct_mapping_payload(
             employee_source_attributes, employee_mapping_preference,
@@ -733,7 +664,7 @@ class Mapping(models.Model):
 
     @staticmethod
     def auto_map_ccc_employees(destination_type: str, default_ccc_account_id: str, workspace_id: int):
-        """̆̆̆̆̆̆̆̆̆̆̆
+        """
         Auto map ccc employees
         :param destination_type: Destination Type of mappings
         :param default_ccc_account_id: Default CCC Account
@@ -747,8 +678,7 @@ class Mapping(models.Model):
             destination_id=default_ccc_account_id, workspace_id=workspace_id, attribute_type=destination_type
         ).first()
 
-        existing_source_ids = get_existing_source_ids(
-            destination_type, workspace_id)
+        existing_source_ids = get_existing_source_ids(destination_type, workspace_id)
 
         mapping_batch = []
         for source_employee in employee_source_attributes:
@@ -780,12 +710,9 @@ class EmployeeMapping(models.Model):
         DestinationAttribute, on_delete=models.PROTECT, null=True, related_name='destination_vendor')
     destination_card_account = models.ForeignKey(
         DestinationAttribute, on_delete=models.PROTECT, null=True, related_name='destination_card_account')
-    workspace = models.ForeignKey(
-        Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
-    created_at = models.DateTimeField(
-        auto_now_add=True, help_text='Created at datetime')
-    updated_at = models.DateTimeField(
-        auto_now=True, help_text='Updated at datetime')
+    workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
+    created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
+    updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
 
     class Meta:
         db_table = 'employee_mappings'
@@ -822,18 +749,14 @@ class CategoryMapping(models.Model):
     Category Mappings
     """
     id = models.AutoField(primary_key=True)
-    source_category = models.ForeignKey(
-        ExpenseAttribute, on_delete=models.PROTECT, related_name='categorymapping')
+    source_category = models.ForeignKey(ExpenseAttribute, on_delete=models.PROTECT, related_name='categorymapping')
     destination_account = models.ForeignKey(
         DestinationAttribute, on_delete=models.PROTECT, null=True, related_name='destination_account')
     destination_expense_head = models.ForeignKey(
         DestinationAttribute, on_delete=models.PROTECT, null=True, related_name='destination_expense_head')
-    workspace = models.ForeignKey(
-        Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
-    created_at = models.DateTimeField(
-        auto_now_add=True, help_text='Created at datetime')
-    updated_at = models.DateTimeField(
-        auto_now=True, help_text='Updated at datetime')
+    workspace = models.ForeignKey(Workspace, on_delete=models.PROTECT, help_text='Reference to Workspace model')
+    created_at = models.DateTimeField(auto_now_add=True, help_text='Created at datetime')
+    updated_at = models.DateTimeField(auto_now=True, help_text='Updated at datetime')
 
     class Meta:
         db_table = 'category_mappings'
@@ -881,8 +804,8 @@ class CategoryMapping(models.Model):
             categorymapping__source_category__isnull=True
         ).values('id', 'value')
 
-        source_attributes_id_map = {source_attribute['value'].lower(): source_attribute['id']
-                                    for source_attribute in source_attributes}
+        source_attributes_id_map = {source_attribute['value'].lower(): source_attribute['id'] \
+            for source_attribute in source_attributes}
 
         mapping_creation_batch = []
 
@@ -896,8 +819,7 @@ class CategoryMapping(models.Model):
 
                 mapping_creation_batch.append(
                     CategoryMapping(
-                        source_category_id=source_attributes_id_map[destination_attribute.value.lower(
-                        )],
+                        source_category_id=source_attributes_id_map[destination_attribute.value.lower()],
                         workspace_id=workspace_id,
                         **destination
                     )
@@ -922,14 +844,12 @@ class CategoryMapping(models.Model):
             if category_mapping.destination_expense_head.detail and \
                 'gl_account_no' in category_mapping.destination_expense_head.detail and \
                     category_mapping.destination_expense_head.detail['gl_account_no']:
-                destination_account_internal_ids.append(
-                    category_mapping.destination_expense_head.detail['gl_account_no'])
+                destination_account_internal_ids.append(category_mapping.destination_expense_head.detail['gl_account_no'])
 
             elif category_mapping.destination_expense_head.detail and \
                 'account_internal_id' in category_mapping.destination_expense_head.detail and \
                     category_mapping.destination_expense_head.detail['account_internal_id']:
-                destination_account_internal_ids.append(
-                    category_mapping.destination_expense_head.detail['account_internal_id'])
+                destination_account_internal_ids.append(category_mapping.destination_expense_head.detail['account_internal_id'])
 
         # Retreiving accounts for creating ccc mapping
         destination_attributes = DestinationAttribute.objects.filter(
@@ -940,8 +860,7 @@ class CategoryMapping(models.Model):
 
         destination_id_pk_map = {}
         for attribute in destination_attributes:
-            destination_id_pk_map[attribute['destination_id'].lower(
-            )] = attribute['id']
+            destination_id_pk_map[attribute['destination_id'].lower()] = attribute['id']
 
         mapping_updation_batch = []
 
@@ -950,15 +869,13 @@ class CategoryMapping(models.Model):
 
             if category_mapping.destination_expense_head.detail and \
                 'gl_account_no' in category_mapping.destination_expense_head.detail and\
-                    category_mapping.destination_expense_head.detail['gl_account_no'].lower() in destination_id_pk_map:
-                ccc_account_id = destination_id_pk_map[category_mapping.destination_expense_head.detail['gl_account_no'].lower(
-                )]
+                category_mapping.destination_expense_head.detail['gl_account_no'].lower() in destination_id_pk_map:
+                ccc_account_id = destination_id_pk_map[category_mapping.destination_expense_head.detail['gl_account_no'].lower()]
 
             elif category_mapping.destination_expense_head.detail and \
                 'account_internal_id' in category_mapping.destination_expense_head.detail and \
-                    category_mapping.destination_expense_head.detail['account_internal_id'].lower() in destination_id_pk_map:
-                ccc_account_id = destination_id_pk_map[category_mapping.destination_expense_head.detail['account_internal_id'].lower(
-                )]
+                category_mapping.destination_expense_head.detail['account_internal_id'].lower() in destination_id_pk_map:
+                ccc_account_id = destination_id_pk_map[category_mapping.destination_expense_head.detail['account_internal_id'].lower()]
 
             mapping_updation_batch.append(
                 CategoryMapping(

@@ -45,6 +45,5 @@ urlpatterns = [
     path('expense_fields/', ExpenseFieldView.as_view()),
     path('destination_attributes/', DestinationAttributesView.as_view()),
     path('fyle_fields/', FyleFieldsView.as_view()),
-    path('paginated_destination_attributes/',
-         PaginatedDestinationAttributesView.as_view(), name='paginated_destination_attributes_view'),
+    path('paginated_destination_attributes/', PaginatedDestinationAttributesView.as_view(), name='paginated_destination_attributes_view'),
 ]
