@@ -345,10 +345,12 @@ class DestinationAttribute(models.Model):
         :param attributes_disable_callback_path: API func to call when attribute is to be disabled
         :return: created / updated attributes
         """
-        attribute_destination_id_list = [attribute['destination_id'] for attribute in attributes]
+        unique_attributes = {attribute['destination_id']: attribute for attribute in attributes}
+        attributes = list(unique_attributes.values())
+        attribute_destination_id_list = list(unique_attributes.keys())
 
         filters = {
-            'destination_id__in': attribute_destination_id_list,
+            'destination_id__in': set(attribute_destination_id_list),
             'attribute_type': attribute_type,
             'workspace_id': workspace_id
         }
